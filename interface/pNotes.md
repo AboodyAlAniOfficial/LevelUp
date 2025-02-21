@@ -3,4 +3,5 @@ In case you need to redo the setups follow the first two topics of the video or 
 
 Will implement more details and functions to the pages soon.
 # Note: 
-Maintain the folders' organization when you are downloading. Some files already require specific address paths to get the necessary packages. 
+Extract the zips into the same folder as the rest of the files in this folder (Some of the files require specific address paths to get the necessary packages for their functions) 
+
