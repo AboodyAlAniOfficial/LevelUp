@@ -10,6 +10,23 @@ This project was created by the following people:
 - Bilal Jameel (216567380) <bilaljameel665@gmail.com>/<bilal665@my.yorku.ca>  
 - Tan Khoa Tran (218060541) <rickt02@my.yorku.ca>
 
+## Dependencies
+
+- [PostgreSQL](https://www.postgresql.org/)
+
+## Setup Instructions
+
+These instructions assume you have already installed and setup the dependencies.  If not, do that.
+
+### Database
+
+To setup the database, simply:
+1. Open `pgAdmin`.
+2. Open the query tool (second icon on the left sidebar).
+3. Select a server to use, then press "Connect & Open Query Tool".
+4. In the new window that appears, open the file [schema.sql](./schema.sql).
+5. Execute the script.
+
 ## Documentation Instructions
 
 We are using Markdown files to create our documentation, as they can be stored in our git repository and edited and reviewed by the same means as our code.
