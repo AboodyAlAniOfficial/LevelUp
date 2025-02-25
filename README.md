@@ -13,6 +13,7 @@ This project was created by the following people:
 ## Dependencies
 
 - [PostgreSQL](https://www.postgresql.org/)
+- [NodeJS](https://nodejs.org/)
 
 ## Setup Instructions
 
@@ -26,6 +27,13 @@ To setup the database, simply:
 3. Select a server to use, then press "Connect & Open Query Tool".
 4. In the new window that appears, open the file [schema.sql](./schema.sql).
 5. Execute the script.
+
+### Frontend
+
+1. Go to `interface/levelup_vue/levelup_vue`.
+2. Run `npm install`.
+
+To run the web server, run `npm run serve`.  To access the website, go to the URL it provides.
 
 ## Documentation Instructions
 
