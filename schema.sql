@@ -92,6 +92,6 @@ CREATE TABLE levelup.nutrientamount (
     NumberOfObserv DOUBLE PRECISION,
     NutrientSourceID INT,
     NutrientDateOfEn DATE,
-    FOREIGN KEY (FoodID) REFERENCES food_data(FoodID) ON DELETE CASCADE,
-    FOREIGN KEY (NutrientID) REFERENCES nutrientsname(NutrientID) ON DELETE CASCADE
+    FOREIGN KEY (FoodID) REFERENCES levelup.fooddata(FoodID) ON DELETE CASCADE,
+    FOREIGN KEY (NutrientID) REFERENCES levelup.nutrientsname(NutrientID) ON DELETE CASCADE
 );
