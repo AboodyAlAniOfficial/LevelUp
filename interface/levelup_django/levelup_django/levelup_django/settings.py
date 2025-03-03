@@ -92,9 +92,9 @@ DATABASES = {
         'OPTIONS':{
             'options': '-c search_path=levelup'
         },
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD':'postgres',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD':'',
         'HOST':'localhost',
         'PORT':'5432',
     }
