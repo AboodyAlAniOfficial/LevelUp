@@ -53,3 +53,45 @@ CREATE TABLE levelup.Followers (
 	follows_user_id INT REFERENCES levelup.Users(user_id) ON DELETE CASCADE, -- This is the 'following'
 	UNIQUE (user_id, follows_user_id) -- Prevents duplicate follow relationships
 );
+
+--Unsure if this should be 'levelup.fooddata' or just 'fooddata'
+--Essentially, this is needed to separate the tables of existing foods from the foods the user saves
+CREATE TABLE levelup.fooddata (
+    FoodID SERIAL PRIMARY KEY,
+    FoodCode INT,
+    FoodGroupID INT,
+    FoodSourceID INT,
+    FoodDescription TEXT,
+    FoodDescriptionF TEXT,
+    FoodDateOfEntry DATE,
+    FoodDateOfPublication DATE,
+    CountryCode INT,
+    ScientificName TEXT
+);
+
+--Same discrepancy with this name
+CREATE TABLE levelup.nutrientsname (
+    NutrientID INT NOT NULL,
+    PRIMARY KEY (NutrientID),
+    NutrientCode INT,
+    NutrientSymbol CHARACTER VARYING(50),
+    NutrientUnit CHARACTER VARYING(50),
+    NutrientName CHARACTER VARYING(255),
+    NutrientNameF CHARACTER VARYING(255),
+    TagName CHARACTER VARYING(50),
+    NutrientDecimal INT
+);
+
+--Same discrepancy with this name
+CREATE TABLE levelup.nutrientamount (
+    FoodID INT NOT NULL,
+    NutrientID INT NOT NULL,
+    PRIMARY KEY (FoodID, NutrientID),
+    NutrientValue DOUBLE PRECISION,
+    StandardError DOUBLE PRECISION,
+    NumberOfObserv DOUBLE PRECISION,
+    NutrientSourceID INT,
+    NutrientDateOfEn DATE,
+    FOREIGN KEY (FoodID) REFERENCES food_data(FoodID) ON DELETE CASCADE,
+    FOREIGN KEY (NutrientID) REFERENCES nutrientsname(NutrientID) ON DELETE CASCADE
+);
