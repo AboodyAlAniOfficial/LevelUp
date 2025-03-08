@@ -26,8 +26,10 @@ CREATE TABLE levelup.Meals (
 	user_id INT REFERENCES levelup.Users(user_id) ON DELETE CASCADE,
 	meal_name VARCHAR(255),
 	calories INT CHECK (calories >= 0),
-	macronutrients JSONB, -- Stores fats, carbs, proteins
-	ingredients JSONB -- Stores the weight of each ingredient
+	protein INT,
+	carbs INT,
+	fats INT,
+	description VARCHAR(255) -- Stores a description of each meal  
 );
 
 CREATE TABLE levelup.HealthGoals (
