@@ -22,7 +22,7 @@ CREATE TABLE levelup.Users (
 );
 
 CREATE TABLE levelup.Meals (
-	meal_id INT,
+	meal_id SERIAL,
 	user_id INT,
 	meal_name VARCHAR(255),
 	calories INT CHECK (calories >= 0),
