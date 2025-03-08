@@ -22,14 +22,18 @@ CREATE TABLE levelup.Users (
 );
 
 CREATE TABLE levelup.Meals (
-	meal_id SERIAL PRIMARY KEY,
-	user_id INT REFERENCES levelup.Users(user_id) ON DELETE CASCADE,
+	meal_id INT,
+	user_id INT,
 	meal_name VARCHAR(255),
 	calories INT CHECK (calories >= 0),
 	protein INT,
 	carbs INT,
 	fats INT,
-	description VARCHAR(255) -- Stores a description of each meal  
+	description VARCHAR(255) -- Stores a description of each meal 
+	PRIMARY KEY (meal_id, user_id),
+   	FOREIGN KEY (meal_id) REFERENCES levelup.fooddata(FoodID) ON DELETE CASCADE,
+   	FOREIGN KEY (user_id) REFERENCES levelup.Users(user_id) ON DELETE CASCADE
+	
 );
 
 CREATE TABLE levelup.HealthGoals (
