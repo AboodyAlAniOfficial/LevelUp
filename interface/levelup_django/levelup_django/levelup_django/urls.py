@@ -23,5 +23,5 @@ urlpatterns = [
     path('api/v1/', include('djoser.urls.authtoken')),
     path('meals/', include('meals.urls')),
     path('daily_goals/', include('daily_goals.urls')),
-    
+    path('accounts/', include('accounts.urls'))
 ]
