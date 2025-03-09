@@ -26,6 +26,7 @@
            window.location.href = "/";
          } else {
            document.getElementById("loginerr").classList.remove("hidden");
+           document.getElementById("registererr").classList.add("hidden");
          }
        });
        xhr.open("POST", url, false);
@@ -45,6 +46,7 @@
              "active_username", document.getElementById("username").value);
            window.location.href = "/";
          } else {
+           document.getElementById("loginerr").classList.add("hidden");
            document.getElementById("registererr").classList.remove("hidden");
          }
        });
