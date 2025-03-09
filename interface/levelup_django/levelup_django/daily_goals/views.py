@@ -7,8 +7,9 @@ import re
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import Daily_GoalsSerializer
-from .serializers import calorieSerializer
+from .serializers import calorieSerializer, mealSerializer, dictionarySerializer, stepGoalSerializer, weightGoalSerializer
 from .models import daily_goals
+from meals.models import Meal
 from django.db import connection
 from django.shortcuts import get_object_or_404, get_list_or_404
 
@@ -105,6 +106,69 @@ def stepsGoal(request, pk):
     except daily_goals.DoesNotExist:
         return Response({"error":"user does not exist"}, status=404)
 
+
 @api_view(['POST'])
 def calculateCalories(request, pk):
-    return 
+    #see if the user has had any meals for breakfast, lunch and dinner
+    try:
+        breakfast = request.data.get('breakfast', None)
+        lunch = request.data.get('lunch', None)
+        dinner = request.data.get('dinner', None)
+        if not (breakfast or lunch or dinner):
+            return Response({"error": "no meal was provided"}, status=400)
+        
+        meals_data = {}
+        calories = 0
+        target = Meal.objects.filter(user=pk)
+
+        
+        #loop through all the meals in the request and take the sum of the calories of each meal
+        for meal_time, name in {'breakfast': breakfast, 'lunch': lunch, 'dinner': dinner}.items():
+            if name:
+                meal_data = target.get(meal_name=name)
+                if meal_data:
+                    meal = mealSerializer(meal_data)
+                    #{"meal":name, "calories": meal_data.calories}
+                    meals_data[meal_time] = meal.data
+                    
+                    
+                    calories += meal_data.calories
+                else: 
+                    return Response({"error": "meal was not found"}, status=404)
+                
+        #serializer to return the response
+        serializer = dictionarySerializer(data=meals_data)
+        #checks if the serializer is valid
+        if serializer.is_valid():
+
+            return Response({"status": "success", "dailyCalories": calories, "meals data": serializer.data}, status=200)
+        
+        return Response({"error": "Invalid serializer"}, status=400)
+    except Meal.DoesNotExist:
+        return Response({"error":"an error has occured while trying to calculate calories"}, status=404)
+
+
+ #get method for daily steps goal 
+@api_view(['GET'])
+def getDailySteps(request, pk):
+
+    stepsAmount = get_object_or_404(daily_goals, user=pk)
+
+    serializer = stepGoalSerializer(stepsAmount, many=False)
+
+    return Response({"status": "success", "steps":serializer.data}, status=200)
+
+#get method for weight goal
+@api_view(['GET'])
+def getWeightGoal(request, pk):
+
+    currentGoal = get_object_or_404(daily_goals, user=pk)
+
+    serializer = weightGoalSerializer(currentGoal, many=False)
+
+    return Response({"status": "success", "Target":serializer.data}, status=200)
+
+
+    
+    
+    
