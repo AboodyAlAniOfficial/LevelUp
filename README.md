@@ -45,6 +45,10 @@ To populate the database, do the following:
 
 To run the web server, run `npm run serve`.  To access the website, go to the URL it provides.
 
+### Backend
+
+The backend requires you to set your database information in environment variables.  Set `LEVELUP_DBUSER` and `LEVELUP_DBPASS` to the username and password of the postgresql account you want to use.
+
 ## Documentation Instructions
 
 We are using Markdown files to create our documentation, as they can be stored in our git repository and edited and reviewed by the same means as our code.

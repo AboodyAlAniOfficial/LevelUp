@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -89,14 +90,14 @@ WSGI_APPLICATION = 'levelup_django.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'OPTIONS':{
-            'options': '-c search_path=levelup'
-        },
-        'NAME': '',
-        'USER': '',
-        'PASSWORD':'',
-        'HOST':'localhost',
-        'PORT':'5432',
+        'HOST': 'localhost',
+        'NAME': 'postgres',
+        'USER': os.environ["LEVELUP_DBUSER"],
+        'PASSWORD': os.environ["LEVELUP_DBPASS"],
+        'OPTIONS': {
+            'options': '-c search_path=levelup_django',
+            'passfile': '.my_pgpass'
+        }
     }
 }
 
