@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'meals',
     'daily_goals',
+    'accounts',
 
     'rest_framework',
     'rest_framework.authtoken',

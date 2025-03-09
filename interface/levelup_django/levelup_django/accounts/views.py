@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate
 # TEMP don't require csrf
 from django.views.decorators.csrf import csrf_exempt
 
+from accounts.models import Unit
 # Create your views here.
 
 def index(request):
@@ -32,3 +33,50 @@ def login(request):
         data['username'] = request.POST['username']
     return HttpResponse(json.dumps(data))
 
+@csrf_exempt
+def unit(request) -> HttpResponse:
+    if request.method == "GET":
+        return _getunit(
+            username=request.GET['username'],
+            dimension=request.GET['dimension'])
+    elif request.method == "POST":
+        return _setunit(
+            username=request.POST['username'],
+            dimension=request.POST['dimension'],
+            unitname=request.POST['unitname'])
+
+def _getunit(username: str, dimension: str) -> HttpResponse:
+    user = User.objects.get(username=username)
+    units_entries = Unit.objects.filter(user=user)
+    if units_entries:
+        units_entry = units_entries.first()
+    else:
+        return HttpResponse("No units set for this user.")
+
+    if dimension == "length":
+        return HttpResponse(units_entry.length)
+    elif dimension == "mass":
+        return HttpResponse(units_entry.mass)
+    elif dimension == "energy":
+        return HttpResponse(units_entry.energy)
+
+def _setunit(username: str, dimension: str, unitname: str) -> HttpResponse:
+    user = User.objects.get(username=username)
+    units_entries = Unit.objects.filter(user=user)
+    if units_entries:
+        units_entry = units_entries.first()
+    else:
+        units_entry = Unit(user=user)
+
+    if dimension == "length":
+        units_entry.length = unitname
+        units_entry.save()
+    elif dimension == "mass":
+        units_entry.mass = unitname
+        units_entry.save()
+    elif dimension == "energy":
+        units_entry.energy = unitname
+        units_entry.save()
+    else:
+        raise ValueError("Unidentified dimension.")
+    return HttpResponse("Unit successfully set.")
