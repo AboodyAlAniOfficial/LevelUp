@@ -1,12 +1,12 @@
 <template>
-    <form action="login">
+    <form id="login_form" action="http://localhost:8000/accounts/login/" method="POST">
 	<label for="username">Username:</label>
-	<input id="username">
+	<input id="username" name="username" required>
 	<br>
 	<label for="password">Password:</label>
-	<input id="password" type="password">
+	<input id="password" name="password" type="password" required>
 	<br>
-    <input type="submit">
+        <input type="submit">
     </form>
 </template>
 
