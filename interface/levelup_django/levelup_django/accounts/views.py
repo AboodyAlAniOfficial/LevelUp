@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render
 from django.http import HttpResponse
 
@@ -22,7 +24,8 @@ def register(request):
 def login(request):
     user = authenticate(username=request.POST['username'],
                         password=request.POST['password'])
-    if user is None:
-        return HttpResponse("Login failed.")
-    else:
-        return HttpResponse("Login successful.")
+    data = { 'success': user is not None }
+    if user is not None:
+        data['username'] = request.POST['username']
+    return HttpResponse(json.dumps(data))
+

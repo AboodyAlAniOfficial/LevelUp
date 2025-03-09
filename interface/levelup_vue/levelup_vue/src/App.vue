@@ -34,8 +34,9 @@
 
           <div class="navbar-item">
             <div class="buttons">
-              <template v-if="$store.state.isAuthenticated">
-                <router-link to="/profile" class="button is-light">Profile</router-link>
+              <template v-if="activeUsername()">
+                <router-link to="/profile" class="button is-light">{{ activeUsername() }}</router-link>
+                <button @click="logout">Log Out</button>
               </template>
 
               <template v-else>
@@ -67,6 +68,15 @@ export default {
     return {
       showMobileMenu: false,
       isOpen: false,
+    }
+  },
+  methods: {
+    activeUsername() {
+      return window.localStorage.getItem("active_username");
+    },
+    logout() {
+      window.localStorage.removeItem("active_username");
+      window.location.href = "/";
     }
   }
 }
