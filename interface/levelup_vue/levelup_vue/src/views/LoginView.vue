@@ -6,6 +6,7 @@
     <input id="password" name="password" type="password" required>
     <br>
     <button @click="login">Login</button>
+    <button @click="register">Sign Up</button>
 </template>
 
 <script>
@@ -27,6 +28,22 @@
          } else {
            console.log("failure");
          }
+       });
+       xhr.open("POST", url, false);
+
+       const form_data = new FormData();
+       form_data.append('username', document.getElementById("username").value);
+       form_data.append('password', document.getElementById("password").value);
+       xhr.send(form_data);
+     },
+     register() {
+       console.log("Signing Up...");
+       const xhr = new XMLHttpRequest();
+       const url = "http://localhost:8000/accounts/register/"
+       xhr.addEventListener("load", function(evt) {
+         localStorage.setItem(
+           "active_username", document.getElementById("username").value);
+         window.location.href = "/";
        });
        xhr.open("POST", url, false);
 
