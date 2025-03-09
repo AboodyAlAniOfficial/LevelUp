@@ -1,12 +1,13 @@
 <template>
+    <p id="loginerr" class="error hidden"><em>Login failed.</em></p>
     <label for="username">Username:</label>
     <input id="username" name="username" required>
     <br>
     <label for="password">Password:</label>
     <input id="password" name="password" type="password" required>
     <br>
-    <button @click="login">Login</button>
-    <button @click="register">Sign Up</button>
+    <button @click="login" class="button is-dark">Login</button>
+    <button @click="register" class="button is-dark">Sign Up</button>
 </template>
 
 <script>
@@ -15,18 +16,16 @@
    components: {},
    methods: {
      login() {
-       console.log("Logging in...");
        const xhr = new XMLHttpRequest();
        const url = "http://localhost:8000/accounts/login/"
        xhr.addEventListener("load", function(evt) {
          console.log(xhr.response);
          const response = JSON.parse(xhr.response);
          if (response["success"]) {
-           console.log("success");
            localStorage.setItem("active_username", response["username"]);
            window.location.href = "/";
          } else {
-           console.log("failure");
+           document.getElementById("loginerr").classList.remove("hidden");
          }
        });
        xhr.open("POST", url, false);
@@ -37,7 +36,6 @@
        xhr.send(form_data);
      },
      register() {
-       console.log("Signing Up...");
        const xhr = new XMLHttpRequest();
        const url = "http://localhost:8000/accounts/register/"
        xhr.addEventListener("load", function(evt) {
@@ -55,3 +53,13 @@
   }
 }
 </script>
+
+<style>
+.error {
+    color: #ff0000;
+ }
+
+.hidden {
+    display: none;
+ }
+</style>
