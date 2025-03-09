@@ -1,5 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import ProfileView from '../views/ProfileView.vue'
+import MealView from '../views/MealView.vue'
+import ExerciseView from '../views/ExerciseView.vue'
+import Login from '../views/LoginView.vue'
+import LeaderboardView from '../views/LeaderboardView.vue'
+
 
 const routes = [
   {
@@ -18,23 +24,28 @@ const routes = [
   {
     path: '/login',
     name: 'login',
-    component: () => import('../views/LoginView.vue')
+    component: Login
   },
   {
     path: '/profile',
     name: 'profile',
-    component: () => import('../views/ProfileView.vue')
+    component: ProfileView
   },
   {
     path: '/meal',
     name: 'meal',
-    component: () => import('../views/MealView.vue')
+    component: MealView
   },
   {
     path: '/exercise',
     name: 'exercise',
-    component: () => import('../views/ExerciseView.vue')
+    component: ExerciseView 
   },
+  {
+    path: '/leaderboard',
+    name: 'leaderboard',
+    component: LeaderboardView
+  }
 ]
 
 const router = createRouter({
