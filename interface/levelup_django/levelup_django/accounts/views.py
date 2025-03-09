@@ -16,9 +16,12 @@ def index(request):
 
 @csrf_exempt
 def register(request):
+    if User.objects.filter(username=request.POST['username']):
+        return HttpResponse(json.dumps({ 'success': False }))
+
     user = User.objects.create_user(
         request.POST['username'], password=request.POST['password'])
-    return HttpResponse("Account created.")
+    return HttpResponse(json.dumps({ 'success': True }))
 
 @csrf_exempt
 def login(request):

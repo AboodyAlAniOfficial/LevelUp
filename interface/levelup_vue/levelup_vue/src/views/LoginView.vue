@@ -1,5 +1,6 @@
 <template>
     <p id="loginerr" class="error hidden"><em>Login failed.</em></p>
+    <p id="registererr" class="error hidden"><em>An account with this username already exists.</em></p>
     <label for="username">Username:</label>
     <input id="username" name="username" required>
     <br>
@@ -19,7 +20,6 @@
        const xhr = new XMLHttpRequest();
        const url = "http://localhost:8000/accounts/login/"
        xhr.addEventListener("load", function(evt) {
-         console.log(xhr.response);
          const response = JSON.parse(xhr.response);
          if (response["success"]) {
            localStorage.setItem("active_username", response["username"]);
@@ -39,9 +39,14 @@
        const xhr = new XMLHttpRequest();
        const url = "http://localhost:8000/accounts/register/"
        xhr.addEventListener("load", function(evt) {
-         localStorage.setItem(
-           "active_username", document.getElementById("username").value);
-         window.location.href = "/";
+         const response = JSON.parse(xhr.response);
+         if (response["success"]) {
+           localStorage.setItem(
+             "active_username", document.getElementById("username").value);
+           window.location.href = "/";
+         } else {
+           document.getElementById("registererr").classList.remove("hidden");
+         }
        });
        xhr.open("POST", url, false);
 
