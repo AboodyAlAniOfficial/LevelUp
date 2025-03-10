@@ -16,9 +16,6 @@ const routes = [
   {
     path: '/about',
     name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
   },
   {
@@ -39,7 +36,7 @@ const routes = [
   {
     path: '/exercise',
     name: 'exercise',
-    component: ExerciseView 
+    component: ExerciseView
   },
   {
     path: '/leaderboard',
@@ -49,16 +46,19 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHistory(), // Removed process.env.BASE_URL for simplicity
   routes
 })
 
+// Navigation guard (optional)
 router.beforeEach((to, from, next) => {
-  if (to.matched.some(record => record.meta.requireLogin) && !store.state.isAuthenticated) {
-    next({ name: 'LogIn', query: { to: to.path } });
-  } else {
-    next()
-  }
-})
+  const isAuthenticated = localStorage.getItem('userToken') !== null; // Check login status
 
-export default router
+  if (to.matched.some(record => record.meta.requireLogin) && !isAuthenticated) {
+    next({ name: 'login', query: { to: to.path } }); // Redirect to login page
+  } else {
+    next();
+  }
+});
+
+export default router;
