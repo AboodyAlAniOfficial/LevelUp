@@ -7,6 +7,9 @@
             <option value="mm">Millimetre (mm)</option>
             <option value="ft">Foot (’)</option>
         </select>
+        <br>
+        <button @click="saveUnits" class="button is-dark">Save Units</button>
+        <br>
 
         <p>Example values:</p>
         <ul>
@@ -41,7 +44,7 @@
    },
    mounted() {
      // this.getUserProfile();
-     console.log("hi");
+     this.loadUnits();
      this.updateUnits();
    },
    methods: {
@@ -65,12 +68,32 @@
        }
      },
      updateUnits() {
-       console.log("changed - " + this.getLengthUnit());
        for (const [id, value] of LENGTH_VALUES) {
-         console.log(id, value);
          document.getElementById(id).innerText =
            this.getUnitValue("length", value) + " " + this.getLengthUnit();
        }
+     },
+     loadUnits() {
+       const xhr = new XMLHttpRequest();
+       xhr.addEventListener("load", function(evt) {
+         if (xhr.response != "No units set for this user.") {
+           document.getElementById("lengthselect").value = xhr.response;
+         }
+       });
+       const url = `http://localhost:8000/accounts/unit/?username=${localStorage.getItem("active_username")}&dimension=length`
+       xhr.open("GET", url, false);
+       xhr.send();
+     },
+     saveUnits() {
+       const xhr = new XMLHttpRequest();
+       const url = "http://localhost:8000/accounts/unit/"
+       xhr.open("POST", url, false);
+       const form_data = new FormData();
+       form_data.append('username', localStorage.getItem("active_username"));
+       form_data.append('dimension', 'length');
+       form_data.append('unitname',
+                        document.getElementById("lengthselect").value);
+       xhr.send(form_data);
      }
    }
 }
