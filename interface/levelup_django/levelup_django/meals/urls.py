@@ -1,9 +1,9 @@
-# meals/urls.py
-
 from django.urls import path
-from .views import log_meal, daily_calories
+from . import views
+
+app_name = 'meals'
 
 urlpatterns = [
-    path('log_meal/', log_meal, name='log_meal'),
-    path('daily_calories/', daily_calories, name='daily_calories'),
+    path('search/', views.search_predefined_meals, name='search_predefined_meals'),
+    path('create/', views.create_logged_meal, name='create_logged_meal'),
 ]

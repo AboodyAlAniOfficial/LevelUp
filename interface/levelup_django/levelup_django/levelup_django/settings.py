@@ -16,7 +16,6 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -48,10 +47,16 @@ INSTALLED_APPS = [
     'djoser',
 ]
 
-# Change this to correct address later
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",
-]
+# REST Framework settings: Enable token and session authentication
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+}
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -92,11 +97,11 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'HOST': 'localhost',
-        'NAME': 'postgres',
+        'NAME': 'levelup_django',
         'USER': os.environ["LEVELUP_DBUSER"],
         'PASSWORD': os.environ["LEVELUP_DBPASS"],
         'OPTIONS': {
-            'options': '-c search_path=levelup_django',
+            'options': '-c search_path=levelup',
             'passfile': '.my_pgpass'
         }
     }
@@ -139,10 +144,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# TEMP
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8080']
+# TEMP: Add trusted CSRF origins
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8087']

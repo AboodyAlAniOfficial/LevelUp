@@ -1,82 +1,86 @@
-import json
-
-from django.shortcuts import render
-from django.http import HttpResponse
-
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-
-# TEMP don't require csrf
-from django.views.decorators.csrf import csrf_exempt
-
 from accounts.models import Unit
-# Create your views here.
 
+@api_view(['GET'])
 def index(request):
-    return HttpResponse("This is the accounts index.")
+    return Response("This is the accounts index.")
 
-@csrf_exempt
+@api_view(['POST'])
 def register(request):
-    if User.objects.filter(username=request.POST['username']):
-        return HttpResponse(json.dumps({ 'success': False }))
+    username = request.data.get('username')
+    password = request.data.get('password')
+    
+    if User.objects.filter(username=username).exists():
+        return Response({'success': False, 'message': 'Username already exists.'})
+    
+    User.objects.create_user(username=username, password=password)
+    return Response({'success': True})
 
-    user = User.objects.create_user(
-        request.POST['username'], password=request.POST['password'])
-    return HttpResponse(json.dumps({ 'success': True }))
-
-@csrf_exempt
+@api_view(['POST'])
 def login(request):
-    user = authenticate(username=request.POST['username'],
-                        password=request.POST['password'])
-    data = { 'success': user is not None }
-    if user is not None:
-        data['username'] = request.POST['username']
-    return HttpResponse(json.dumps(data))
+    username = request.data.get('username')
+    password = request.data.get('password')
+    
+    user = authenticate(username=username, password=password)
+    data = {'success': user is not None}
+    if user:
+        data['username'] = username
+    return Response(data)
 
-@csrf_exempt
-def unit(request) -> HttpResponse:
+@api_view(['GET', 'POST'])
+def unit(request):
     if request.method == "GET":
-        return _getunit(
-            username=request.GET['username'],
-            dimension=request.GET['dimension'])
+        username = request.query_params.get('username')
+        dimension = request.query_params.get('dimension')
+        return _getunit(username, dimension)
     elif request.method == "POST":
-        return _setunit(
-            username=request.POST['username'],
-            dimension=request.POST['dimension'],
-            unitname=request.POST['unitname'])
+        username = request.data.get('username')
+        dimension = request.data.get('dimension')
+        unitname = request.data.get('unitname')
+        return _setunit(username, dimension, unitname)
 
-def _getunit(username: str, dimension: str) -> HttpResponse:
-    user = User.objects.get(username=username)
+def _getunit(username, dimension):
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response("User not found.", status=404)
+    
     units_entries = Unit.objects.filter(user=user)
-    if units_entries:
-        units_entry = units_entries.first()
-    else:
-        return HttpResponse("No units set for this user.")
-
+    if not units_entries.exists():
+        return Response("No units set for this user.", status=404)
+    
+    units_entry = units_entries.first()
     if dimension == "length":
-        return HttpResponse(units_entry.length)
+        return Response(units_entry.length)
     elif dimension == "mass":
-        return HttpResponse(units_entry.mass)
+        return Response(units_entry.mass)
     elif dimension == "energy":
-        return HttpResponse(units_entry.energy)
+        return Response(units_entry.energy)
+    return Response("Invalid dimension.", status=400)
 
-def _setunit(username: str, dimension: str, unitname: str) -> HttpResponse:
-    user = User.objects.get(username=username)
+def _setunit(username, dimension, unitname):
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response("User not found.", status=404)
+    
     units_entries = Unit.objects.filter(user=user)
-    if units_entries:
+    if units_entries.exists():
         units_entry = units_entries.first()
     else:
         units_entry = Unit(user=user)
-
+    
     if dimension == "length":
         units_entry.length = unitname
-        units_entry.save()
     elif dimension == "mass":
         units_entry.mass = unitname
-        units_entry.save()
     elif dimension == "energy":
         units_entry.energy = unitname
-        units_entry.save()
     else:
-        raise ValueError("Unidentified dimension.")
-    return HttpResponse("Unit successfully set.")
+        return Response("Invalid dimension.", status=400)
+    
+    units_entry.save()
+    return Response("Unit successfully set.")

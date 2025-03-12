@@ -29,7 +29,7 @@ CREATE TABLE levelup.Meals (
 	protein INT,
 	carbs INT,
 	fats INT,
-	description VARCHAR(255) -- Stores a description of each meal 
+	description VARCHAR(255), -- Stores a description of each meal 
 	PRIMARY KEY (meal_id, user_id),
    	FOREIGN KEY (meal_id) REFERENCES levelup.fooddata(FoodID) ON DELETE CASCADE,
    	FOREIGN KEY (user_id) REFERENCES levelup.Users(user_id) ON DELETE CASCADE
