@@ -35,12 +35,12 @@
         </div>
         
         <div class="action-buttons">
-          <button class="action-btn primary-btn">
+          <a class="action-btn primary-btn" href="/login">
             <span class="btn-icon">👤</span> Sign Up
-          </button>
-          <button class="action-btn secondary-btn">
+          </a>
+          <a class="action-btn secondary-btn" href="/about">
             <span class="btn-icon">ℹ️</span> Learn More
-          </button>
+          </a>
         </div>
       </div>
     </div>
