@@ -26,6 +26,45 @@
             </div>
           </div>
         </div>
+
+        <div class="setting-item">
+            <div class="setting-header">
+                <div class="setting-icon">🏋️</div>
+                <div class="setting-label">
+                    <label for="lengthselect">Mass Unit</label>
+                    <p class="setting-description">Choose your preferred unit for mass measurements</p>
+                </div>
+            </div>
+            
+            <div class="setting-control">
+                <div class="custom-select">
+                    <select id="massselect" name="mass" @change="updateUnits" class="unit-select">
+                        <option value="kg">Kilogram (kg)</option>
+                        <option value="lb">Pound (lb)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-header">
+                <div class="setting-icon">⚡</div>
+                <div class="setting-label">
+                    <label for="lengthselect">Energy Unit</label>
+                    <p class="setting-description">Choose your preferred unit for energy measurements</p>
+                </div>
+            </div>
+            
+            <div class="setting-control">
+                <div class="custom-select">
+                    <select id="energyselect" name="energy" @change="updateUnits" class="unit-select">
+                        <option value="J">Joule (J)</option>
+                        <option value="kJ">Kilojoule (kJ)</option>
+                        <option value="kcal">Kilocalorie (kcal)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
       </div>
       
       <!-- Example Preview Section -->
@@ -39,6 +78,26 @@
             <div class="preview-info">
               <p class="preview-label">Average Canadian height:</p>
               <p class="preview-value" id="height"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-items">
+          <div class="preview-item">
+            <div class="preview-icon">👤</div>
+            <div class="preview-info">
+              <p class="preview-label">Average Canadian mass:</p>
+              <p class="preview-value" id="mass"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-items">
+          <div class="preview-item">
+            <div class="preview-icon">👤</div>
+            <div class="preview-info">
+              <p class="preview-label">Average energy needed in a day:</p>
+              <p class="preview-value" id="bmr"></p>
             </div>
           </div>
         </div>
@@ -74,6 +133,22 @@ const LENGTH_VALUES = new Map();
 // id 'height' will be set to 1.7 m or equivalent in other unit
 LENGTH_VALUES.set("height", 1.7);
 
+const MASS_UNITS = new Map();
+MASS_UNITS.set("kg", 1.0);
+MASS_UNITS.set("lb", 0.45359237);
+
+const MASS_VALUES = new Map();
+// source: https://www150.statcan.gc.ca/n1/pub/82-003-x/2011003/article/11533/tbl/tbl1-eng.htm
+MASS_VALUES.set("mass", 76.65);
+
+const ENERGY_UNITS = new Map();
+ENERGY_UNITS.set("J", 1.0);
+ENERGY_UNITS.set("kJ", 1e+3);
+ENERGY_UNITS.set("kcal", 4184.0);
+
+const ENERGY_VALUES = new Map();
+ENERGY_VALUES.set("bmr", 6300.0);
+
 export default {
   name: 'ProfileView',
   data() {
@@ -101,10 +176,22 @@ export default {
     getLengthUnit() {
       return document.getElementById("lengthselect").value;
     },
+    getMassUnit() {
+      return document.getElementById("massselect").value;
+    },
+    getEnergyUnit() {
+      return document.getElementById("energyselect").value;
+    },
     getUnitValue(dimension, value) {
       if (dimension == "length") {
         const unit = this.getLengthUnit();
         return (value / LENGTH_UNITS.get(unit)).toPrecision(4);
+      } else if (dimension == "mass") {
+        const unit = this.getMassUnit();
+        return (value / MASS_UNITS.get(unit)).toPrecision(4);
+      } else if (dimension == "energy") {
+        const unit = this.getEnergyUnit();
+        return (value / ENERGY_UNITS.get(unit)).toPrecision(4);
       }
     },
     updateUnits() {
@@ -112,29 +199,46 @@ export default {
         document.getElementById(id).innerText =
           this.getUnitValue("length", value) + " " + this.getLengthUnit();
       }
+      for (const [id, value] of MASS_VALUES) {
+        document.getElementById(id).innerText =
+          this.getUnitValue("mass", value) + " " + this.getMassUnit();
+      }
+      for (const [id, value] of ENERGY_VALUES) {
+        document.getElementById(id).innerText =
+          this.getUnitValue("energy", value) + " " + this.getEnergyUnit();
+      }
     },
     loadUnits() {
+      this.loadUnit("length", "lengthselect");
+      this.loadUnit("mass", "massselect");
+      this.loadUnit("energy", "energyselect");
+    },
+    loadUnit(dimension, selectorId) {
       const xhr = new XMLHttpRequest();
       xhr.addEventListener("load", function(evt) {
         if (xhr.response != "No units set for this user.") {
           document.getElementById("lengthselect").value = xhr.response;
         }
       });
-      const url = `http://localhost:8000/accounts/unit/?username=${localStorage.getItem("active_username")}&dimension=length`
+      const url = `http://localhost:8000/api/v1/accounts/unit/?username=${localStorage.getItem("active_username")}&dimension=${dimension}`
       xhr.open("GET", url, false);
       xhr.send();
     },
     saveUnits() {
+      this.saveUnit("length", "lengthselect");
+      this.saveUnit("mass", "massselect");
+      this.saveUnit("energy", "energyselect");
+    },
+    saveUnit(dimension, selectorId) {
       const xhr = new XMLHttpRequest();
-      const url = "http://localhost:8000/accounts/unit/"
+      const url = "http://localhost:8000/api/v1/accounts/unit/"
       xhr.open("POST", url, false);
       const form_data = new FormData();
       form_data.append('username', localStorage.getItem("active_username"));
-      form_data.append('dimension', 'length');
-      form_data.append('unitname',
-                      document.getElementById("lengthselect").value);
+      form_data.append('dimension', dimension);
+      form_data.append('unitname', document.getElementById(selectorId).value);
       xhr.send(form_data);
-      
+
       // Show success message
       this.saveSuccess = true;
       setTimeout(() => {
