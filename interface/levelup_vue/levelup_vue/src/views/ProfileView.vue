@@ -217,7 +217,8 @@ export default {
       const xhr = new XMLHttpRequest();
       xhr.addEventListener("load", function(evt) {
         if (xhr.response != "No units set for this user.") {
-          document.getElementById("lengthselect").value = xhr.response;
+          const element = document.getElementById(selectorId);
+          element.value = xhr.response.slice(1, -1);
         }
       });
       const url = `http://localhost:8000/api/v1/accounts/unit/?username=${localStorage.getItem("active_username")}&dimension=${dimension}`
