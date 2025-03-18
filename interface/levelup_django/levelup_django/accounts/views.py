@@ -17,6 +17,9 @@ def register(request):
         return Response({'success': False, 'message': 'Username already exists.'})
     
     User.objects.create_user(username=username, password=password)
+    user = User.objects.get(username=username)
+    unit = Unit(user=user, length="m", mass="kg", energy="kJ")
+    unit.save()
     return Response({'success': True})
 
 @api_view(['POST'])
