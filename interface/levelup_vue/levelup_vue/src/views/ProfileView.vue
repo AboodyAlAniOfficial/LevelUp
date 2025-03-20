@@ -21,7 +21,7 @@
                 <option value="m">Metre (m)</option>
                 <option value="cm">Centimetre (cm)</option>
                 <option value="mm">Millimetre (mm)</option>
-                <option value="ft">Foot (')</option>
+                <option value="ftin">Feet & Inches</option>
               </select>
             </div>
           </div>
@@ -182,6 +182,11 @@ export default {
     getEnergyUnit() {
       return document.getElementById("energyselect").value;
     },
+    getFeetInchValue(value) {
+      const feet = Math.floor(value / 0.3048);
+      const inches = Math.round((value - feet * 0.3048) / 0.0254);
+      return `${feet}’${inches}”`;
+    },
     getUnitValue(dimension, value) {
       if (dimension == "length") {
         const unit = this.getLengthUnit();
@@ -196,8 +201,13 @@ export default {
     },
     updateUnits() {
       for (const [id, value] of LENGTH_VALUES) {
-        document.getElementById(id).innerText =
-          this.getUnitValue("length", value) + " " + this.getLengthUnit();
+        if (this.getLengthUnit() == "ftin") {
+          document.getElementById(id).innerText =
+            this.getFeetInchValue(value);
+        } else {
+          document.getElementById(id).innerText =
+            this.getUnitValue("length", value) + " " + this.getLengthUnit();
+        }
       }
       for (const [id, value] of MASS_VALUES) {
         document.getElementById(id).innerText =
