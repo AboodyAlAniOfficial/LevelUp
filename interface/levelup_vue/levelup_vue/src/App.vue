@@ -22,9 +22,9 @@
             </svg>
             <transition name="fade" appear>
               <div class="sub-menu" v-if="isOpen">
-                <div class="navbar-item">
-                  <router-link to="/meal">Meal Tracker</router-link>
-                  <router-link to="/exercise">Exercise Tracker</router-link>
+                <div>
+                  <router-link class="navbar-item" to="/meal">Meal Tracker</router-link>
+                  <router-link class="navbar-item" to="/exercise">Exercise Tracker</router-link>
                 </div>
               </div>
             </transition>
@@ -97,9 +97,13 @@ nav .navbar-item .sub-menu {
   width: max-content;
 }
 
+nav .sub-menu {
+  background-color: rgb(46, 51, 61);
+}
+
 .fade-enter-active,
 .fade-leave-active {
-  transition: all .5s ease-out;
+  transition: all .25s ease-out;
 }
 
 .fade-enter,
