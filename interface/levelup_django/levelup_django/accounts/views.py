@@ -192,3 +192,33 @@ def _sethealthdata(username: str, field: str, value: float | str) -> Response:
 
     hd_entry.save()
     return Response("Health data successfully set.")
+
+@api_view(['GET'])
+def bmr(request: Request) -> Response:
+    """Calculates the user's BMR, returning it in SI (watts)."""
+    username = request.query_params.get('username')
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response("User not found.", status=404)
+
+    hd_entries = HealthData.objects.filter(user=user)
+    if not hd_entries.exists():
+        return Response("No health data set for this user.", status=400)
+    hd_entry = hd_entries.first()
+
+    if not (hd_entry.height_m and hd_entry.mass_kg
+            and hd_entry.age_yr and hd_entry.sex):
+        return Response("This user's health data is incomplete.", status=400)
+
+    if hd_entry.sex == "male":
+        s = 5
+    elif hd_entry.sex == "female":
+        s = -161
+    else:
+        return Response("The Mifflin-St.Jeor equation used by LevelUp only supports the male and female sexes.  This account’s sex field is set differently.", status=400)
+
+    bmr_kcal_per_day = (10.0 * hd_entry.mass_kg + 625.0 * hd_entry.height_m -
+                        5.0 * hd_entry.age_yr + s)
+    bmr_W = bmr_kcal_per_day / 86400 * 4184
+    return Response(bmr_W, status=200)
