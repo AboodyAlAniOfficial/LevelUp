@@ -3,7 +3,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from accounts.models import Unit, Preferences
+from accounts.models import Unit, Preferences, HealthData
 
 DEFAULT_PRIVACY = "private"
 
@@ -134,3 +134,61 @@ def _setprivacy(username: str, setting: str) -> Response:
     prefs_entry.save()
     return Response("Successfully set user’s privacy setting.")
 
+@api_view(['GET', 'POST'])
+def healthdata(request: Request) -> Response:
+    if request.method == "GET":
+        username = request.query_params.get('username')
+        field = request.query_params.get('field')
+        return _gethealthdata(username, field)
+    elif request.method == "POST":
+        username = request.data.get('username')
+        field = request.data.get('field')
+        value = request.data.get('value')
+        return _sethealthdata(username, field, value)
+
+def _gethealthdata(username: str, field: str) -> Response:
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response("User not found.", status=404)
+
+    hd_entries = HealthData.objects.filter(user=user)
+    if not hd_entries.exists():
+        return Response("No health data set for this user.", status=400)
+
+    hd_entry = hd_entries.first()
+    if field == "height":
+        return Response(hd_entry.height_m)
+    elif field == "mass":
+        return Response(hd_entry.mass_kg)
+    elif field == "age":
+        return Response(hd_entry.age_yr)
+    elif field == "sex":
+        return Response(hd_entry.sex)
+    return Response("Invalid field.", status=400)
+
+def _sethealthdata(username: str, field: str, value: float | str) -> Response:
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response("User not found.", status=404)
+
+    hd_entries = HealthData.objects.filter(user=user)
+    if hd_entries.exists():
+        hd_entry = hd_entries.first()
+    else:
+        hd_entry = HealthData(user=user)
+
+    if field == "height":
+        hd_entry.height_m = value
+    elif field == "mass":
+        hd_entry.mass_kg = value
+    elif field == "age":
+        hd_entry.age_yr = value
+    elif field == "sex":
+        hd_entry.sex = value
+    else:
+        return Response("Invalid field.", status=400)
+
+    hd_entry.save()
+    return Response("Health data successfully set.")
