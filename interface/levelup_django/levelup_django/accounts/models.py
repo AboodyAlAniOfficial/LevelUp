@@ -8,3 +8,9 @@ class Unit(models.Model):
     length = models.CharField(max_length=16)
     mass = models.CharField(max_length=16)
     energy = models.CharField(max_length=16)
+
+class Preferences(models.Model):
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, primary_key=True
+    )
+    privacy = models.CharField(max_length=16)

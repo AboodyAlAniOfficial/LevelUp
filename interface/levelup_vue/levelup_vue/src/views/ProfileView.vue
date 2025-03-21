@@ -102,9 +102,31 @@
           </div>
         </div>
       </div>
+
+      <div class="privacy-section">
+        <h3 class="section-title">Privacy Settings</h3>
+        <div class="setting-item">
+            <div class="setting-header">
+                <div class="setting-icon">👤</div>
+                <div class="setting-label">
+                    <label for="privacyselect">Data Visibility</label>
+                    <p class="setting-description">Choose who can see your tracker and leaderboard data.</p>
+                </div>
+            </div>
+            <div class="setting-control">
+                <div class="custom-select">
+                    <select id="privacyselect" name="privacy" class="unit-select">
+                        <option value="private">Private</option>
+                        <option value="followers">Followers Only</option>
+                        <option value="public">Public</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+      </div>
       
       <div class="action-footer">
-        <button @click="saveUnits" class="submit-btn">
+        <button @click="saveSettings" class="submit-btn">
           <span class="btn-icon">💾</span> Save Preferences
         </button>
         
@@ -159,7 +181,7 @@ export default {
   },
   mounted() {
     // this.getUserProfile();
-    this.loadUnits();
+    this.loadSettings();
     this.updateUnits();
   },
   methods: {
@@ -218,10 +240,11 @@ export default {
           this.getUnitValue("energy", value) + " " + this.getEnergyUnit();
       }
     },
-    loadUnits() {
+    loadSettings() {
       this.loadUnit("length", "lengthselect");
       this.loadUnit("mass", "massselect");
       this.loadUnit("energy", "energyselect");
+      this.loadPrivacy();
     },
     loadUnit(dimension, selectorId) {
       const xhr = new XMLHttpRequest();
@@ -235,10 +258,21 @@ export default {
       xhr.open("GET", url, false);
       xhr.send();
     },
-    saveUnits() {
+    loadPrivacy() {
+      const xhr = new XMLHttpRequest();
+      xhr.addEventListener("load", function(evt) {
+        const element = document.getElementById("privacyselect");
+        element.value = xhr.response.slice(1, -1);
+      });
+      const url = `http://localhost:8000/api/v1/accounts/privacy/?username=${localStorage.getItem("active_username")}`
+      xhr.open("GET", url, false);
+      xhr.send();
+    },
+    saveSettings() {
       this.saveUnit("length", "lengthselect");
       this.saveUnit("mass", "massselect");
       this.saveUnit("energy", "energyselect");
+      this.savePrivacy(document.getElementById("privacyselect").value);
     },
     saveUnit(dimension, selectorId) {
       const xhr = new XMLHttpRequest();
@@ -248,6 +282,21 @@ export default {
       form_data.append('username', localStorage.getItem("active_username"));
       form_data.append('dimension', dimension);
       form_data.append('unitname', document.getElementById(selectorId).value);
+      xhr.send(form_data);
+
+      // Show success message
+      this.saveSuccess = true;
+      setTimeout(() => {
+        this.saveSuccess = false;
+      }, 3000);
+    },
+    savePrivacy(setting) {
+      const xhr = new XMLHttpRequest();
+      const url = "http://localhost:8000/api/v1/accounts/privacy/"
+      xhr.open("POST", url, false);
+      const form_data = new FormData();
+      form_data.append('username', localStorage.getItem("active_username"));
+      form_data.append('setting', setting);
       xhr.send(form_data);
 
       // Show success message

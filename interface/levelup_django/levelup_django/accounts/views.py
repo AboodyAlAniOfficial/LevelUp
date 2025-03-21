@@ -1,8 +1,11 @@
 from rest_framework.decorators import api_view
+from rest_framework.request import Request
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from accounts.models import Unit
+from accounts.models import Unit, Preferences
+
+DEFAULT_PRIVACY = "private"
 
 @api_view(['GET'])
 def index(request):
@@ -20,6 +23,8 @@ def register(request):
     user = User.objects.get(username=username)
     unit = Unit(user=user, length="m", mass="kg", energy="kJ")
     unit.save()
+    prefs = Preferences(user=user, privacy=DEFAULT_PRIVACY)
+    prefs.save()
     return Response({'success': True})
 
 @api_view(['POST'])
@@ -87,3 +92,45 @@ def _setunit(username, dimension, unitname):
     
     units_entry.save()
     return Response("Unit successfully set.")
+
+@api_view(['GET', 'POST'])
+def privacy(request: Request) -> Response:
+    if request.method == "GET":
+        username = request.query_params.get('username')
+        return _getprivacy(username)
+    elif request.method == "POST":
+        username = request.data.get('username')
+        setting = request.data.get('setting')
+        return _setprivacy(username, setting)
+
+def _getprivacy(username: str) -> Response:
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response("User not found.", status=404)
+
+    prefs_entries = Preferences.objects.filter(user=user)
+    if not prefs_entries.exists():
+        return Response(DEFAULT_PRIVACY)
+
+    return Response(prefs_entries.first().privacy)
+
+def _setprivacy(username: str, setting: str) -> Response:
+    if not setting:
+        return Response("No setting provided.")
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response("User not found.", status=404)
+
+    prefs_entries = Preferences.objects.filter(user=user)
+    if prefs_entries.exists():
+        prefs_entry = prefs_entries.first()
+    else:
+        prefs_entry = Preferences(user=user)
+
+    prefs_entry.privacy = setting
+    prefs_entry.save()
+    return Response("Successfully set user’s privacy setting.")
+
