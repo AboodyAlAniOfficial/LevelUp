@@ -146,7 +146,7 @@ export default {
   methods: {
     fetchWeightGoal() {
       axios
-        .get(`/api/weightGoal/${this.userId}`)
+        .get(`/api/v1/daily_goals/weightGoal/${this.userId}`)
         .then((response) => {
           if (response.data && response.data.Target) {
             this.weightGoal = response.data.Target.target_weight;
@@ -159,7 +159,7 @@ export default {
     updateWeight() {
       if (!this.newWeight) return;
       axios
-        .post(`/api/weight/${this.userId}`, { weight: this.newWeight })
+        .post(`/api/v1/daily_goals/weight/${this.userId}`, { weight: this.newWeight })
         .then(() => {
           this.weightMessage = "Weight goal updated successfully!";
           this.fetchWeightGoal();
@@ -172,7 +172,7 @@ export default {
     },
     fetchStepsGoal() {
       axios
-        .get(`/api/dailySteps/${this.userId}`)
+        .get(`/api/v1/daily_goals/dailySteps/${this.userId}`)
         .then((response) => {
           if (response.data && response.data.steps) {
             this.stepsGoal = response.data.steps.daily_steps_goal;
@@ -185,7 +185,7 @@ export default {
     updateSteps() {
       if (!this.newSteps) return;
       axios
-        .post(`/api/steps/${this.userId}`, { steps: this.newSteps })
+        .post(`/api/v1/daily_goals/steps/${this.userId}`, { steps: this.newSteps })
         .then(() => {
           this.stepsMessage = "Steps goal updated successfully!";
           this.fetchStepsGoal();
@@ -198,7 +198,7 @@ export default {
     },
     fetchCalorieGoal() {
       axios
-        .get(`/api/calories/${this.userId}`)
+        .get(`/api/v1/daily_goals/calories/${this.userId}`)
         .then((response) => {
           if (response.data && response.data.data) {
             this.calorieGoal = response.data.data.daily_calorie_goal;
@@ -213,7 +213,7 @@ export default {
       this.calculationError = "";
       this.calculationResult = null;
       axios
-        .post(`/api/calculateCalories/${this.userId}`, {
+        .post(`/api/v1/daily_goals/calculateCalories/${this.userId}`, {
           breakfast: this.breakfast,
           lunch: this.lunch,
           dinner: this.dinner

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import daily_goals
-from meals.models import Meal
+from meals.models import LoggedMeal
 
 class Daily_GoalsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,7 +16,7 @@ class mealSerializer(serializers.ModelSerializer):
     
     
     class Meta:
-        model = Meal
+        model = LoggedMeal
         fields = ['meal_name', 'calories']
 
 class dictionarySerializer(serializers.Serializer):

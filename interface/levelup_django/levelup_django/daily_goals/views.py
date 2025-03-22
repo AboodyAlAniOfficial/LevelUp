@@ -9,9 +9,12 @@ from rest_framework.response import Response
 from .serializers import Daily_GoalsSerializer
 from .serializers import calorieSerializer, mealSerializer, dictionarySerializer, stepGoalSerializer, weightGoalSerializer
 from .models import daily_goals
-from meals.models import Meal
+from meals.models import LoggedMeal
+from accounts.models import User, Unit, Preferences
 from django.db import connection
 from django.shortcuts import get_object_or_404, get_list_or_404
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 
 # Create your views here.
@@ -23,6 +26,11 @@ def get_api_urls(request):
     }
     
     return Response(api_urls)
+
+    
+
+
+
 #return all goals in the database
 @api_view(['GET'])
 def goalList(request):
@@ -50,10 +58,18 @@ def getCalories(request, pk):
 def weightGoal(request, pk):
     
     
+
+    
+    
+
+    
     
     try:
         
         weight = request.data.get('weight', None)
+        weight = str(weight)
+
+        
         
         if weight is None:
             return Response({"error": "Wieght was not provided"}, status=400)
@@ -119,7 +135,7 @@ def calculateCalories(request, pk):
         
         meals_data = {}
         calories = 0
-        target = Meal.objects.filter(user=pk)
+        target = LoggedMeal.objects.filter(user=pk)
 
         
         #loop through all the meals in the request and take the sum of the calories of each meal
@@ -144,7 +160,7 @@ def calculateCalories(request, pk):
             return Response({"status": "success", "dailyCalories": calories, "meals data": serializer.data}, status=200)
         
         return Response({"error": "Invalid serializer"}, status=400)
-    except Meal.DoesNotExist:
+    except LoggedMeal.DoesNotExist:
         return Response({"error":"an error has occured while trying to calculate calories"}, status=404)
 
 

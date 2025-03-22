@@ -11,4 +11,5 @@ urlpatterns = [
     path("steps/<str:pk>", views.stepsGoal, name="steps"),
     path("dailySteps/<str:pk>", views.getDailySteps, name="dailySteps"),
     path("weightGoal/<str:pk>", views.getWeightGoal, name="weightGoal"),
+    
 ]
