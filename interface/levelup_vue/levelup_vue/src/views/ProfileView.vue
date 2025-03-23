@@ -31,7 +31,7 @@
             <div class="setting-header">
                 <div class="setting-icon">🏋️</div>
                 <div class="setting-label">
-                    <label for="lengthselect">Mass Unit</label>
+                    <label for="massselect">Mass Unit</label>
                     <p class="setting-description">Choose your preferred unit for mass measurements</p>
                 </div>
             </div>
@@ -50,7 +50,7 @@
             <div class="setting-header">
                 <div class="setting-icon">⚡</div>
                 <div class="setting-label">
-                    <label for="lengthselect">Energy Unit</label>
+                    <label for="energyselect">Energy Unit</label>
                     <p class="setting-description">Choose your preferred unit for energy measurements</p>
                 </div>
             </div>
@@ -124,12 +124,83 @@
             </div>
         </div>
       </div>
-      
+
+      <div class="settings-section">
+        <h3 class="section-title">Health Data</h3>
+        <p class="preview-description">Input your personal health data.  This will be used in the Mifflin-St. Jeor Equation to calculate your Basal Metabolic Rate (BMR), the amount of energy you need in order to stay alive.</p>
+        
+        <div class="setting-item">
+          <div class="setting-header">
+            <div class="setting-icon">📏</div>
+            <div class="setting-label">
+              <label for="heightinput">Height</label>
+            </div>
+          </div>
+          
+          <div class="setting-control">
+            <div class="custom-select">
+              <input id="heightinput" name="height" type="number">
+              <span id="heightunit"> m</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-header">
+            <div class="setting-icon">🏋️</div>
+            <div class="setting-label">
+              <label for="massinput">Mass</label>
+            </div>
+          </div>
+
+          <div class="setting-control">
+            <div class="custom-select">
+              <input id="massinput" name="mass" type="number">
+              <span id="massunit"> kg</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-header">
+            <div class="setting-icon">📆</div>
+            <div class="setting-label">
+              <label for="ageselect">Age</label>
+            </div>
+          </div>
+
+          <div class="setting-control">
+            <div class="custom-select">
+              <input id="ageinput" name="age" type="number">
+              <span id="ageunit"> yr</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-header">
+            <div class="setting-icon">⚤️</div>
+            <div class="setting-label">
+              <label for="sexselect">Sex</label>
+            </div>
+          </div>
+
+          <div class="setting-control">
+            <div class="custom-select">
+              <select id="sexselect" name="sex" class="unit-select">
+                <option value="male">♂ Male</option>
+                <option value="female">♀ Female</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="action-footer">
         <button @click="saveSettings" class="submit-btn">
           <span class="btn-icon">💾</span> Save Preferences
         </button>
-        
+
         <transition name="fade">
           <div v-if="saveSuccess" class="success-message">
             <span class="success-icon">✓</span> Your preferences have been saved!
@@ -240,11 +311,34 @@ export default {
           this.getUnitValue("energy", value) + " " + this.getEnergyUnit();
       }
     },
+    loadHealthData(field, selectorId) {
+      const xhr = new XMLHttpRequest();
+      xhr.addEventListener("load", function(evt) {
+        document.getElementById(selectorId).value = xhr.response;
+      });
+      const url = `http://localhost:8000/api/v1/accounts/healthdata/?username=${localStorage.getItem("active_username")}&field=${field}`
+      xhr.open("GET", url, false);
+      xhr.send();
+    },
+    loadSex(selectorId) {
+      const xhr = new XMLHttpRequest();
+      xhr.addEventListener("load", function(evt) {
+        const element = document.getElementById(selectorId);
+        element.value = xhr.response.slice(1, -1);
+      });
+      const url = `http://localhost:8000/api/v1/accounts/healthdata/?username=${localStorage.getItem("active_username")}&field=sex`
+      xhr.open("GET", url, false);
+      xhr.send();
+    },
     loadSettings() {
       this.loadUnit("length", "lengthselect");
       this.loadUnit("mass", "massselect");
       this.loadUnit("energy", "energyselect");
       this.loadPrivacy();
+      this.loadHealthData("height", "heightinput");
+      this.loadHealthData("mass", "massinput");
+      this.loadHealthData("age", "ageinput");
+      this.loadSex("sexselect");
     },
     loadUnit(dimension, selectorId) {
       const xhr = new XMLHttpRequest();
@@ -268,11 +362,31 @@ export default {
       xhr.open("GET", url, false);
       xhr.send();
     },
+    saveHealthData(field, valueId) {
+      const xhr = new XMLHttpRequest();
+      const url = "http://localhost:8000/api/v1/accounts/healthdata/"
+      xhr.open("POST", url, false);
+      const form_data = new FormData();
+      form_data.append('username', localStorage.getItem("active_username"));
+      form_data.append('field', field);
+      form_data.append('value', document.getElementById(valueId).value);
+      xhr.send(form_data);
+
+      // Show success message
+      this.saveSuccess = true;
+      setTimeout(() => {
+        this.saveSuccess = false;
+      }, 3000);
+    },
     saveSettings() {
       this.saveUnit("length", "lengthselect");
       this.saveUnit("mass", "massselect");
       this.saveUnit("energy", "energyselect");
       this.savePrivacy(document.getElementById("privacyselect").value);
+      this.saveHealthData("height", "heightinput");
+      this.saveHealthData("mass", "massinput");
+      this.saveHealthData("age", "ageinput");
+      this.saveHealthData("sex", "sexinput");
     },
     saveUnit(dimension, selectorId) {
       const xhr = new XMLHttpRequest();
