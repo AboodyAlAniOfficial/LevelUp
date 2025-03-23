@@ -192,6 +192,18 @@
                 <option value="female">♀ Female</option>
               </select>
             </div>
+
+          </div>
+        </div>
+
+        <div class="preview-items">
+          <div class="preview-item">
+            <div class="preview-icon">⚡</div>
+            <div class="preview-info">
+              <p class="preview-label">Your Calculated <abbr title="Basal Metabolic Rate">BMR</abbr>:</p>
+              <p class="preview-value" id="calculated-bmr"></p>
+              <span class="error-text" id="no-bmr" style="display: none;">Could not calculate BMR due to missing health data.</span>
+            </div>
           </div>
         </div>
       </div>
@@ -311,6 +323,21 @@ export default {
           this.getUnitValue("energy", value) + " " + this.getEnergyUnit();
       }
     },
+    loadBMR(selectorId) {
+      const xhr = new XMLHttpRequest();
+      xhr.addEventListener("load", function(evt) {
+        if (isNaN(xhr.response) || isNaN(parseFloat(xhr.response))) {
+          document.getElementById("no-bmr").style.display = "inline";
+        } else {
+          document.getElementById("no-bmr").style.display = "none";
+          const bmrValue = parseFloat(xhr.response).toPrecision(4);
+          document.getElementById("calculated-bmr").innerText = bmrValue + " W";
+        }
+      });
+      const url = `http://localhost:8000/api/v1/accounts/bmr/?username=${localStorage.getItem("active_username")}`
+      xhr.open("GET", url, false);
+      xhr.send();
+    },
     loadHealthData(field, selectorId) {
       const xhr = new XMLHttpRequest();
       xhr.addEventListener("load", function(evt) {
@@ -339,6 +366,7 @@ export default {
       this.loadHealthData("mass", "massinput");
       this.loadHealthData("age", "ageinput");
       this.loadSex("sexselect");
+      this.loadBMR("calculated-bmr");
     },
     loadUnit(dimension, selectorId) {
       const xhr = new XMLHttpRequest();
@@ -386,7 +414,8 @@ export default {
       this.saveHealthData("height", "heightinput");
       this.saveHealthData("mass", "massinput");
       this.saveHealthData("age", "ageinput");
-      this.saveHealthData("sex", "sexinput");
+      this.saveHealthData("sex", "sexselect");
+      this.loadBMR("calculated-bmr");
     },
     saveUnit(dimension, selectorId) {
       const xhr = new XMLHttpRequest();
@@ -607,6 +636,10 @@ export default {
   border-radius: 12px;
   color: #2e7d32;
   font-weight: 500;
+}
+
+.error-text {
+  color: red;
 }
 
 .success-icon {
