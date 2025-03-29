@@ -15,6 +15,7 @@ from django.db import connection
 from django.shortcuts import get_object_or_404, get_list_or_404
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Q
 
 
 # Create your views here.
@@ -27,27 +28,41 @@ def get_api_urls(request):
     
     return Response(api_urls)
 
+@api_view(['GET'])
+def search_logged_meals(request):
+    query = request.GET.get('q', '')
+    username = request.GET.get('user', '')
+
+    if not username:
+        return Response({'error': 'Username is required'}, status=400)
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=404)
+
+    meals = LoggedMeal.objects.filter(user=user, meal_name__icontains=query).order_by('-created_at')[:10]
+    results = [
+        {
+            'meal_name': meal.meal_name,
+            'calories': meal.calories,
+            'id': meal.id,
+            'created_at': meal.created_at
+        } for meal in meals
+    ]
+    return Response(results)
 
 
 @api_view(['POST'])
 def createDailyGoals(request):
-    
-    
     try:
         userVal = request.data.get('user_id', None)
-
         if userVal is not None:
-            
-            
             if not User.objects.filter(id=userVal).exists():
                 return Response({"error":"user does not exist"}, status=404)
-            
-
-            
 
             daily, created = daily_goals.objects.get_or_create(
                 user_id = userVal
-
             )
 
             if created:
@@ -64,77 +79,43 @@ def get_user_id(request):
     if user_name is not None:
         try:
             userVal = User.objects.get(username=user_name)
-
             user_id = userVal.pk
-        
             serializer = userSerializer(userVal, many=False)
-
-            # response_data = serializer.data
-            # response_data['user_id'] = user_id
-            
             return Response({"status": "success", "data":serializer.data}, status=200)
-    
         except User.DoesNotExist:
             return Response({"error":"user not found"}, status=404) 
     else:
         return Response({"error":"username not found"}, status=404) 
 
-#return all goals in the database
 @api_view(['GET'])
 def goalList(request):
     goals = daily_goals.objects.all()
     if goals.exists():
-
         serializer = Daily_GoalsSerializer(goals, many=True)
         return Response({"status":"success", "data":serializer.data}, status=200)
     else:
         return Response({"error":"goals not found"}, status=404) 
 
-#get the current calories
 @api_view(['GET'])
 def getCalories(request, pk):
-    
-    
     calorieAmount = get_object_or_404(daily_goals, user=pk)
-    
-
     serializer = calorieSerializer(calorieAmount, many=False)
     return Response({"status":"success", "data":serializer.data}, status=200)
-   
-#Set a new target weight fot the user
+
 @api_view(['POST'])
 def weightGoal(request, pk):
-    
-    
-
-    
-    
-
-    
-    
     try:
-        
         weight = request.data.get('weight', None)
         weight = str(weight)
-
-        
-        
         if weight is None:
             return Response({"error": "Wieght was not provided"}, status=400)
-        
-        
         reg = r'^\d{1,5}(\.\d{1,2})?$'
-
         if not re.match(reg, weight):
             raise ValidationError("The decimal value exceeds the allowed precision of 5,2")
-        
-        
         decimal_val = Decimal(weight)
-
         target = daily_goals.objects.get(user=pk)
         target.target_weight = decimal_val
         target.save()
-
         return Response({"status": "success", "weight": str(decimal_val)}, status=200)
     except InvalidOperation:
         return Response({"error": "Invalid decimal format"}, status=400)
@@ -143,115 +124,73 @@ def weightGoal(request, pk):
     except daily_goals.DoesNotExist:
         return Response({"error":"user does not exist"}, status=404)
 
-#update the steps goal for the user
 @api_view(['POST'])
 def stepsGoal(request, pk):
-    
-    
-
     try:
         steps = request.data.get('steps', None)
-
         if steps is None:
             return Response({"error": "Steps was not provided"}, status=400)
-        
         steps = int(steps)
-
         if steps <0:
             return Response({"error": "Steps cannot be negative"}, status=400)
-        
         target = daily_goals.objects.get(user=pk)
         target.daily_steps_goal = steps
         target.save()
-
         return Response({"status": "success", "steps goal": steps}, status=200)
     except ValueError:
         return Response({"error": "Invalid Integer value"}, status=400)
     except daily_goals.DoesNotExist:
         return Response({"error":"user does not exist"}, status=404)
 
-
 @api_view(['POST'])
 def calculateCalories(request, pk):
-    #see if the user has had any meals for breakfast, lunch and dinner
     try:
         breakfast = request.data.get('breakfast', None)
         lunch = request.data.get('lunch', None)
         dinner = request.data.get('dinner', None)
         if not (breakfast or lunch or dinner):
             return Response({"error": "no meal was provided"}, status=400)
-        
         meals_data = {}
         calories = 0
         target = LoggedMeal.objects.filter(user=pk)
-
-        
-        #loop through all the meals in the request and take the sum of the calories of each meal
         for meal_time, name in {'breakfast': breakfast, 'lunch': lunch, 'dinner': dinner}.items():
             if name:
                 meal_data = target.get(meal_name=name)
                 if meal_data:
                     meal = mealSerializer(meal_data)
-                    #{"meal":name, "calories": meal_data.calories}
                     meals_data[meal_time] = meal.data
-                    
-                    
                     calories += meal_data.calories
                 else: 
                     return Response({"error": "meal was not found"}, status=404)
-                
-        #serializer to return the response
         serializer = dictionarySerializer(data=meals_data)
-        #checks if the serializer is valid
         if serializer.is_valid():
-
             return Response({"status": "success", "dailyCalories": calories, "meals data": serializer.data}, status=200)
-        
         return Response({"error": "Invalid serializer"}, status=400)
     except LoggedMeal.DoesNotExist:
         return Response({"error":"an error has occured while trying to calculate calories"}, status=404)
 
-
- #get method for daily steps goal 
 @api_view(['GET'])
 def getDailySteps(request, pk):
-
     stepsAmount = get_object_or_404(daily_goals, user=pk)
-
     serializer = stepGoalSerializer(stepsAmount, many=False)
-
     return Response({"status": "success", "steps":serializer.data}, status=200)
 
-#get method for weight goal
 @api_view(['GET'])
 def getWeightGoal(request, pk):
-
     currentGoal = get_object_or_404(daily_goals, user=pk)
-
     serializer = weightGoalSerializer(currentGoal, many=False)
-
     return Response({"status": "success", "Target":serializer.data}, status=200)
 
 @api_view(['POST'])
 def updateDailyCalories(request, pk):
     try:
         calorie = request.data.get("calories", None)
-
         if calorie is None:
             return Response({"error": "todays calories were not provided"}, status=400)
-        
         calorie = int(calorie)
-
         target = daily_goals.objects.get(user=pk)
         target.daily_calorie_goal = calorie
         target.save()
         return Response({"status":"success", "daily calorie goal": calorie}, status=200)
-
     except daily_goals.DoesNotExist:
         return Response({"error": "user does not exist"}, status=404)
-
-
-
-    
-    
-    
