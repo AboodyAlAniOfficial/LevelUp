@@ -24,15 +24,15 @@
 
     <!-- Daily Steps Goal Card -->
     <div class="dashboard-card">
-      <h2 class="card-title">Daily Steps Goal</h2>
+      <h2 class="card-title">Daily Steps</h2>
       <p>
-        Current Daily Steps Goal:
+        Current Daily Steps:
         <span>{{ stepsGoal ? stepsGoal : "Not Set" }}</span>
       </p>
       <input
         type="number"
         v-model="newSteps"
-        placeholder="Enter new steps goal"
+        placeholder="Enter daily steps"
         class="search-input"
       />
       <button class="submit-btn" @click="updateSteps">Update Steps Goal</button>
@@ -49,6 +49,21 @@
       <p>
         Current Daily Calorie Goal:
         <span>{{ calorieGoal ? calorieGoal : "Not Set" }}</span>
+        <br>
+        <label for="Not Active">
+          Not Active:
+        <input type="radio" name="selection" value="1.2" @change="updateCalories(1.2)">
+        <br>
+        </label>
+        <label for="Moderately Active">
+          Moderatly Active:
+        <input type="radio" name="selection" value="1.55" @change="updateCalories(1.55)">
+        <br>
+        </label>
+        <label for="Very Active">
+          Very Active:
+        <input type="radio" name="selection" value="1.725" @change="updateCalories(1.725)">
+        </label>
       </p>
     </div>
 
@@ -122,10 +137,15 @@ export default {
   name: "HealthGoals",
   data() {
     return {
-      userId: 1, // Replace with the current authenticated user id as needed
+      userId: null, // Replace with the current authenticated user id as needed
       weightGoal: null,
       stepsGoal: null,
       calorieGoal: null,
+      mass: null,
+      age: null,
+      sex: null,
+      height: null,
+      bmr: null,
       newWeight: "",
       newSteps: "",
       weightMessage: "",
@@ -138,12 +158,132 @@ export default {
       calculationError: ""
     };
   },
-  mounted() {
+  async mounted() {
+    await this.fetchUserId();
+    await this.fetchUserData();
+
+    await this.createDailyGoals();
+    if(this.userId!=null){
     this.fetchWeightGoal();
     this.fetchStepsGoal();
     this.fetchCalorieGoal();
+    this.fetchUserBMR();
+    }
+    
   },
   methods: {
+    async fetchUserData(){
+    try{
+      const active_user = localStorage.getItem("active_username");
+      const response = await axios .get(`/api/v1/accounts/healthdata/`, {params: {username: active_user, field: 'mass'}});
+
+      if (response.data){
+        this.mass = response.data;
+        console.log("MASS:" + this.mass);
+      }
+
+  //     response = await axios .get(`/api/v1/accounts/healthdata/`, {params: {username: active_user, field: 'age'}});
+
+  //     if (response.data){
+  //       this.age = response.data;
+  //     }
+
+  //     response = await axios .get(`/api/v1/accounts/healthdata/`, {params: {username: active_user, field: 'sex'}});
+
+  //     if (response.data){
+  //       this.sex = response.data;
+  //     }
+
+  //     response = await axios .get(`/api/v1/accounts/healthdata/`, {params: {username: active_user, field: 'height'}});
+
+  //     if(response.data){
+  //       this.height = response.data;
+  //     }
+
+    }catch (error){
+      console.error("Error Fetching Data", error)
+    }
+  },
+
+  async createDailyGoals(){
+    try {
+      const response = await axios .post(`/api/v1/daily_goals/createDailyGoals/`, {user_id: this.userId});
+      if (response.data){
+        
+      }
+
+    }catch (error){
+
+    }
+  },
+
+  async updateCalories(value){
+
+    const updated_bmr = this.bmr/4184 * 86400;
+    const today_calories =  value * updated_bmr;
+    var updated_calories = today_calories;
+    if(this.mass<this.weightGoal){
+
+      updated_calories += 500;
+      console.log("MASS IS LESS THAN TARGET");
+      console.log("TARGET" + this.weightGoal);
+    }else if(this.mass > this.weightGoal){
+    updated_calories -= 500;
+
+    }else{
+
+    }
+
+    console.log("BMR" + this.bmr);
+    
+    try {
+      const response = await axios .post(`/api/v1/daily_goals/updateCalories/${this.userId}`,{calories: updated_calories});
+
+      if (response.data){
+        this.fetchCalorieGoal();
+      }
+    }catch (error){
+      console.error("Error updating calories", error);
+    }
+
+  },
+
+  async fetchUserBMR(){
+
+    try{
+      const active_user = localStorage.getItem("active_username");
+      const response = await axios .get(`/api/v1/accounts/bmr/`, {params: {username: active_user}});
+
+      if(response.data){
+        this.bmr = response.data;
+      }
+    }catch (error){
+      console.error("Error Fetching BMR", error);
+    }
+
+  },
+ 
+   async fetchUserId(){
+    try{
+    const active_user = localStorage.getItem("active_username");
+    console.log("Active user:", active_user);
+    const response = await axios .get(`/api/v1/daily_goals/getUserId/`,{params: {username: active_user}});
+        
+        if (response.data && response.data.data){
+            this.userId = response.data.data.user_id;
+            
+            if(this.userId == null){
+              console.error("USER ID is null");
+            }else{
+            console.log("USER ID: ", this.userId);
+          
+            }
+          }
+        
+        }catch (error){
+          console.error("Error fetching user_Id", error)
+        }
+    },
     fetchWeightGoal() {
       axios
         .get(`/api/v1/daily_goals/weightGoal/${this.userId}`)
@@ -187,13 +327,13 @@ export default {
       axios
         .post(`/api/v1/daily_goals/steps/${this.userId}`, { steps: this.newSteps })
         .then(() => {
-          this.stepsMessage = "Steps goal updated successfully!";
+          this.stepsMessage = "Steps updated successfully!";
           this.fetchStepsGoal();
           this.newSteps = "";
         })
         .catch((error) => {
           console.error("Error updating steps goal:", error);
-          this.stepsMessage = "Error updating steps goal.";
+          this.stepsMessage = "Error updating steps.";
         });
     },
     fetchCalorieGoal() {
@@ -207,6 +347,10 @@ export default {
         .catch((error) => {
           console.error("Error fetching calorie goal:", error);
         });
+    },updateCalorieGoal(){
+      const active_user = localStorage.getItem("active_username");
+      const response = axios .post(`/api/v1/accounts/bmr/`, {})
+
     },
     calculateDailyCalories() {
       this.calculationMessage = "";

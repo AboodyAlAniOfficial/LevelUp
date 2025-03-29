@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import daily_goals
 from meals.models import LoggedMeal
+from accounts.models import User, HealthData
 
 class Daily_GoalsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,3 +37,19 @@ class weightGoalSerializer(serializers.ModelSerializer):
     class Meta:
         model = daily_goals
         fields = ['target_weight']
+
+class userSerializer(serializers.ModelSerializer):
+    user_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['username', 'user_id']
+    def get_user_id(self, obj):
+
+        return obj.pk
+
+class healthDataSerializer(serializers.ModelSerializer):
+       
+       class Meta:
+           model = HealthData
+           fields = ['mass_kg']

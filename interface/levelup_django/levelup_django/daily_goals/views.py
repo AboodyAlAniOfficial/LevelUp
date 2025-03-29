@@ -7,7 +7,7 @@ import re
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import Daily_GoalsSerializer
-from .serializers import calorieSerializer, mealSerializer, dictionarySerializer, stepGoalSerializer, weightGoalSerializer
+from .serializers import calorieSerializer, mealSerializer, dictionarySerializer, stepGoalSerializer, weightGoalSerializer, userSerializer
 from .models import daily_goals
 from meals.models import LoggedMeal
 from accounts.models import User, Unit, Preferences
@@ -27,9 +27,57 @@ def get_api_urls(request):
     
     return Response(api_urls)
 
+
+
+@api_view(['POST'])
+def createDailyGoals(request):
     
+    
+    try:
+        userVal = request.data.get('user_id', None)
 
+        if userVal is not None:
+            
+            
+            if not User.objects.filter(id=userVal).exists():
+                return Response({"error":"user does not exist"}, status=404)
+            
 
+            
+
+            daily, created = daily_goals.objects.get_or_create(
+                user_id = userVal
+
+            )
+
+            if created:
+                return Response({"status":"success", "daily goals created for user_id": userVal}, status=200)
+            else:
+                return Response({"status":"success", "daily goals already exists for user_id": userVal}, status=200)
+            
+    except Exception as e:
+        return Response({"error":str(e)}, status=500)
+
+@api_view(['GET'])
+def get_user_id(request):
+    user_name = request.GET.get('username', None)
+    if user_name is not None:
+        try:
+            userVal = User.objects.get(username=user_name)
+
+            user_id = userVal.pk
+        
+            serializer = userSerializer(userVal, many=False)
+
+            # response_data = serializer.data
+            # response_data['user_id'] = user_id
+            
+            return Response({"status": "success", "data":serializer.data}, status=200)
+    
+        except User.DoesNotExist:
+            return Response({"error":"user not found"}, status=404) 
+    else:
+        return Response({"error":"username not found"}, status=404) 
 
 #return all goals in the database
 @api_view(['GET'])
@@ -183,6 +231,25 @@ def getWeightGoal(request, pk):
     serializer = weightGoalSerializer(currentGoal, many=False)
 
     return Response({"status": "success", "Target":serializer.data}, status=200)
+
+@api_view(['POST'])
+def updateDailyCalories(request, pk):
+    try:
+        calorie = request.data.get("calories", None)
+
+        if calorie is None:
+            return Response({"error": "todays calories were not provided"}, status=400)
+        
+        calorie = int(calorie)
+
+        target = daily_goals.objects.get(user=pk)
+        target.daily_calorie_goal = calorie
+        target.save()
+        return Response({"status":"success", "daily calorie goal": calorie}, status=200)
+
+    except daily_goals.DoesNotExist:
+        return Response({"error": "user does not exist"}, status=404)
+
 
 
     

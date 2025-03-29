@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from accounts.models import User
+from django.contrib.auth.models import User
 
 
 
