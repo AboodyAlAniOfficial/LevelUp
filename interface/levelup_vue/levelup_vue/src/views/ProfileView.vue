@@ -31,7 +31,7 @@
             <div class="setting-header">
                 <div class="setting-icon">🏋️</div>
                 <div class="setting-label">
-                    <label for="lengthselect">Mass Unit</label>
+                    <label for="massselect">Mass Unit</label>
                     <p class="setting-description">Choose your preferred unit for mass measurements</p>
                 </div>
             </div>
@@ -50,7 +50,7 @@
             <div class="setting-header">
                 <div class="setting-icon">⚡</div>
                 <div class="setting-label">
-                    <label for="lengthselect">Energy Unit</label>
+                    <label for="energyselect">Energy Unit</label>
                     <p class="setting-description">Choose your preferred unit for energy measurements</p>
                 </div>
             </div>
@@ -124,12 +124,95 @@
             </div>
         </div>
       </div>
-      
+
+      <div class="settings-section">
+        <h3 class="section-title">Health Data</h3>
+        <p class="preview-description">Input your personal health data.  This will be used in the Mifflin-St. Jeor Equation to calculate your Basal Metabolic Rate (BMR), the amount of energy you need in order to stay alive.</p>
+
+        <div class="setting-item">
+          <div class="setting-header">
+            <div class="setting-icon">📏</div>
+            <div class="setting-label">
+              <label for="heightinput">Height</label>
+            </div>
+          </div>
+
+          <div class="setting-control">
+            <div class="custom-select">
+              <input id="heightinput" name="height" type="number">
+              <span id="heightunit"> m</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-header">
+            <div class="setting-icon">🏋️</div>
+            <div class="setting-label">
+              <label for="massinput">Mass</label>
+            </div>
+          </div>
+
+          <div class="setting-control">
+            <div class="custom-select">
+              <input id="massinput" name="mass" type="number">
+              <span id="massunit"> kg</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-header">
+            <div class="setting-icon">📆</div>
+            <div class="setting-label">
+              <label for="ageselect">Age</label>
+            </div>
+          </div>
+
+          <div class="setting-control">
+            <div class="custom-select">
+              <input id="ageinput" name="age" type="number">
+              <span id="ageunit"> yr</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-header">
+            <div class="setting-icon">⚤️</div>
+            <div class="setting-label">
+              <label for="sexselect">Sex</label>
+            </div>
+          </div>
+
+          <div class="setting-control">
+            <div class="custom-select">
+              <select id="sexselect" name="sex" class="unit-select">
+                <option value="male">♂ Male</option>
+                <option value="female">♀ Female</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="preview-items">
+          <div class="preview-item">
+            <div class="preview-icon">⚡</div>
+            <div class="preview-info">
+              <p class="preview-label">Your Calculated <abbr title="Basal Metabolic Rate">BMR</abbr>:</p>
+              <p class="preview-value" id="calculated-bmr"></p>
+              <span class="error-text" id="no-bmr" style="display: none;">Could not calculate BMR due to missing health data.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="action-footer">
         <button @click="saveSettings" class="submit-btn">
           <span class="btn-icon">💾</span> Save Preferences
         </button>
-        
+
         <transition name="fade">
           <div v-if="saveSuccess" class="success-message">
             <span class="success-icon">✓</span> Your preferences have been saved!
@@ -149,6 +232,7 @@ LENGTH_UNITS.set("m", 1.0);
 LENGTH_UNITS.set("cm", 1e-2);
 LENGTH_UNITS.set("mm", 1e-3);
 LENGTH_UNITS.set("ft", 0.3048);
+LENGTH_UNITS.set("in", 0.0254);
 
 // values to set
 const LENGTH_VALUES = new Map();
@@ -170,6 +254,8 @@ ENERGY_UNITS.set("kcal", 4184.0);
 
 const ENERGY_VALUES = new Map();
 ENERGY_VALUES.set("bmr", 6300.0);
+
+var prevLengthUnit, prevMassUnit;
 
 export default {
   name: 'ProfileView',
@@ -222,6 +308,7 @@ export default {
       }
     },
     updateUnits() {
+      // update values of text that has units
       for (const [id, value] of LENGTH_VALUES) {
         if (this.getLengthUnit() == "ftin") {
           document.getElementById(id).innerText =
@@ -239,12 +326,81 @@ export default {
         document.getElementById(id).innerText =
           this.getUnitValue("energy", value) + " " + this.getEnergyUnit();
       }
+      this.loadBMR();
+
+      // update values of unit inputs
+      var lengthUnit = this.getLengthUnit();
+      if (lengthUnit == "ftin") {
+        lengthUnit = "in";
+      }
+      const massUnit = this.getMassUnit();
+
+      const oldHeight = document.getElementById("heightinput").value;
+      const newHeight = (oldHeight * LENGTH_UNITS.get(prevLengthUnit)
+        / LENGTH_UNITS.get(lengthUnit)).toPrecision(4);
+      document.getElementById("heightinput").value = newHeight;
+      document.getElementById("heightunit").innerText = " " + lengthUnit;
+      const oldMass = document.getElementById("massinput").value;
+      const newMass = (oldMass * MASS_UNITS.get(prevMassUnit)
+        / MASS_UNITS.get(massUnit)).toPrecision(4);
+      document.getElementById("massinput").value = newMass;
+      document.getElementById("massunit").innerText = " " + this.getMassUnit();
+      prevLengthUnit = lengthUnit;
+      prevMassUnit = massUnit;
+    },
+    loadBMR() {
+      const xhr = new XMLHttpRequest();
+      xhr.addEventListener("load", function(evt) {
+        if (isNaN(xhr.response) || isNaN(parseFloat(xhr.response))) {
+          document.getElementById("no-bmr").style.display = "inline";
+        } else {
+          const energyUnit = document.getElementById("energyselect").value;
+          document.getElementById("no-bmr").style.display = "none";
+          const bmrValue = parseFloat(xhr.response * 86400 /
+            ENERGY_UNITS.get(energyUnit)).toPrecision(4);
+          document.getElementById("calculated-bmr").innerText = (
+            bmrValue + " " + energyUnit + "/day");
+        }
+      });
+      const url = `http://localhost:8000/api/v1/accounts/bmr/?username=${localStorage.getItem("active_username")}`
+      xhr.open("GET", url, false);
+      xhr.send();
+    },
+    loadHealthData(field, selectorId, unitValue) {
+      const xhr = new XMLHttpRequest();
+      xhr.addEventListener("load", function(evt) {
+        document.getElementById(selectorId).value = xhr.response / unitValue;
+      });
+      const url = `http://localhost:8000/api/v1/accounts/healthdata/?username=${localStorage.getItem("active_username")}&field=${field}`
+      xhr.open("GET", url, false);
+      xhr.send();
+    },
+    loadSex(selectorId) {
+      const xhr = new XMLHttpRequest();
+      xhr.addEventListener("load", function(evt) {
+        const element = document.getElementById(selectorId);
+        element.value = xhr.response.slice(1, -1);
+      });
+      const url = `http://localhost:8000/api/v1/accounts/healthdata/?username=${localStorage.getItem("active_username")}&field=sex`
+      xhr.open("GET", url, false);
+      xhr.send();
     },
     loadSettings() {
       this.loadUnit("length", "lengthselect");
       this.loadUnit("mass", "massselect");
       this.loadUnit("energy", "energyselect");
       this.loadPrivacy();
+      const lengthUnit = document.getElementById("lengthselect").value;
+      prevLengthUnit = lengthUnit;
+      this.loadHealthData("height", "heightinput",
+                          LENGTH_UNITS.get(lengthUnit));
+      const massUnit = document.getElementById("massselect").value;
+      prevMassUnit = massUnit;
+      this.loadHealthData("mass", "massinput",
+                          MASS_UNITS.get(massUnit));
+      this.loadHealthData("age", "ageinput", 1.0);
+      this.loadSex("sexselect");
+      this.loadBMR();
     },
     loadUnit(dimension, selectorId) {
       const xhr = new XMLHttpRequest();
@@ -268,11 +424,41 @@ export default {
       xhr.open("GET", url, false);
       xhr.send();
     },
+    saveHealthData(field, valueId, hasUnit, unitValue) {
+      var value = document.getElementById(valueId).value;
+      if (hasUnit) {
+        value *= unitValue;
+      }
+
+      const xhr = new XMLHttpRequest();
+      const url = "http://localhost:8000/api/v1/accounts/healthdata/"
+      xhr.open("POST", url, false);
+      const form_data = new FormData();
+      form_data.append('username', localStorage.getItem("active_username"));
+      form_data.append('field', field);
+      form_data.append('value', value);
+      xhr.send(form_data);
+
+      // Show success message
+      this.saveSuccess = true;
+      setTimeout(() => {
+        this.saveSuccess = false;
+      }, 3000);
+    },
     saveSettings() {
       this.saveUnit("length", "lengthselect");
       this.saveUnit("mass", "massselect");
       this.saveUnit("energy", "energyselect");
       this.savePrivacy(document.getElementById("privacyselect").value);
+      const lengthUnit = document.getElementById("lengthselect").value;
+      this.saveHealthData("height", "heightinput", true,
+                          LENGTH_UNITS.get(lengthUnit));
+      const massUnit = document.getElementById("massselect").value;
+      this.saveHealthData("mass", "massinput", true,
+                          MASS_UNITS.get(massUnit));
+      this.saveHealthData("age", "ageinput", false, 1.0);
+      this.saveHealthData("sex", "sexselect", false, 1.0);
+      this.loadBMR();
     },
     saveUnit(dimension, selectorId) {
       const xhr = new XMLHttpRequest();
@@ -493,6 +679,10 @@ export default {
   border-radius: 12px;
   color: #2e7d32;
   font-weight: 500;
+}
+
+.error-text {
+  color: red;
 }
 
 .success-icon {

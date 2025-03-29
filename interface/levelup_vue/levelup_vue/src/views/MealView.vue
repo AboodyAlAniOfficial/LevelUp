@@ -1,245 +1,317 @@
 <template>
   <div class="meal-dashboard">
-    <div class="dashboard-card search-card">
-      <h2 class="card-title">Search and Log a Meal</h2>
-      
-      <div class="search-container">
-        <div class="search-input-wrapper">
-          <input 
-            type="text" 
-            v-model="searchQuery" 
-            @input="searchMeals" 
-            placeholder="Search for a meal..."
-            class="search-input"
-          />
-          <span class="search-icon">🔍</span>
-        </div>
-        
-        <transition name="fade">
-          <ul v-if="searchResults.length" class="results-list">
-            <li 
-              v-for="meal in searchResults" 
-              :key="meal.foodid" 
-              @click="selectMeal(meal)"
-              class="result-item"
-            >
-              {{ meal.fooddescription }}
-            </li>
-          </ul>
-        </transition>
+    <div class="dashboard-card">
+      <h2 class="card-title">Log a Meal with Multiple Items</h2>
+
+      <!-- Meal Name Field -->
+      <div class="input-group">
+        <label for="meal_name">Meal Name</label>
+        <input id="meal_name" type="text" v-model="mealName" placeholder="Enter meal name" class="input-field" />
       </div>
 
-      <!-- Selected meal details -->
-      <transition name="fade">
-        <div v-if="selectedMeal" class="meal-form-container">
-          <div class="selected-meal">
-            <div class="meal-icon">🍽️</div>
-            <div class="meal-info">
-              <h3>{{ selectedMeal.fooddescription }}</h3>
+      <!-- Food Items Section -->
+      <div v-for="(food, index) in foods" :key="index" class="food-section">
+        <!-- Initial Search Bar -->
+        <div v-if="!food.isExpanded" class="search-container">
+          <input
+            v-model="food.search"
+            @input="debouncedSearch(index)"
+            placeholder="Search food..."
+            class="input-field"
+          />
+          <ul v-if="food.searchResults.length" class="results-list">
+            <li
+              v-for="item in food.searchResults"
+              :key="item.food_id"
+              @click="selectFood(index, item)"
+              class="result-item"
+            >
+              {{ item.food }}
+            </li>
+          </ul>
+          
+          <!-- Manual Entry Button -->
+          <button @click="enableManualEntry(index)" class="text-btn">
+            Or enter manually
+          </button>
+        </div>
+
+        <!-- Expanded Form after Selection -->
+        <div v-if="food.isExpanded" class="expanded-form">
+          <div class="form-header">
+            <h3 class="food-title">{{ food.food_name || 'New Food Item' }}</h3>
+            <button @click="removeFood(index)" class="delete-btn">
+              <span class="delete-icon">×</span>
+            </button>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Food Name</label>
+              <input type="text" v-model="food.food_name" placeholder="Food name" class="input-field" />
+            </div>
+            <div class="form-group">
+              <label>Calories</label>
+              <input type="number" v-model.number="food.calories" placeholder="0" class="input-field" />
             </div>
           </div>
-
-          <!-- Form to log the meal -->
-          <form @submit.prevent="submitMeal" class="meal-form">
-            <div class="form-row">
-              <div class="input-group">
-                <label for="meal-type">Meal Type</label>
-                <div class="custom-select">
-                  <select v-model="meal.meal_type" id="meal-type" required>
-                    <option value="breakfast">Breakfast</option>
-                    <option value="lunch">Lunch</option>
-                    <option value="dinner">Dinner</option>
-                    <option value="snack">Snack</option>
-                  </select>
-                </div>
-              </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Protein (g)</label>
+              <input type="number" v-model.number="food.protein" placeholder="0" class="input-field" />
             </div>
-            
-            <div class="input-group">
-              <label for="notes">Notes (optional)</label>
-              <textarea 
-                id="notes" 
-                v-model="meal.notes" 
-                placeholder="Add any details about your meal..."
-                class="notes-textarea"
-              ></textarea>
+            <div class="form-group">
+              <label>Carbs (g)</label>
+              <input type="number" v-model.number="food.carbs" placeholder="0" class="input-field" />
             </div>
-
-            <button type="submit" class="submit-btn">
-              <span class="btn-icon">+</span> Log Meal
-            </button>
-          </form>
+            <div class="form-group">
+              <label>Fats (g)</label>
+              <input type="number" v-model.number="food.fats" placeholder="0" class="input-field" />
+            </div>
+          </div>
         </div>
-      </transition>
+      </div>
 
-      <transition name="fade">
-        <div v-if="message" class="success-message">
-          <span class="success-icon">✓</span> {{ message }}
-        </div>
-      </transition>
+      <!-- Only show Add Another Food button if at least one food item has been expanded -->
+      <button 
+        v-if="hasAtLeastOneExpandedFood" 
+        @click="addFoodSection" 
+        class="btn add-food-btn"
+      >
+        <span class="btn-icon">+</span> Add Another Food
+      </button>
+
+      <div class="input-group">
+        <label for="description">Meal Notes</label>
+        <textarea id="description" v-model="description" class="textarea-field"></textarea>
+      </div>
+
+      <button @click="logMeal" class="btn submit-btn">
+        <span class="btn-icon">+</span> Log Meal
+      </button>
+
+      <div v-if="message" class="success-message">
+        {{ message }}
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-// A simple debounce function to limit API calls
-function debounce(func, wait = 300) {
-  let timeout;
-  return function(...args) {
-    const context = this;
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(context, args), wait);
-  };
-}
-
 import axios from 'axios';
 
 export default {
-  name: 'MealView',
   data() {
     return {
-      searchQuery: '',
-      searchResults: [],
-      selectedMeal: null,
-      
-      meal: {
-        predefined_meal: '',  // We'll set this to the selected meal's foodid
-        meal_type: 'breakfast',
-        notes: '',
-      },
+      mealName: '',
+      foods: [this.getEmptyFoodItem()],
+      description: '',
       message: '',
     };
   },
-  created() {
-    this.searchMeals = debounce(this.searchMeals, 300);
+  computed: {
+    hasAtLeastOneExpandedFood() {
+      // Returns true if at least one food item has been expanded
+      return this.foods.some(food => food.isExpanded);
+    }
   },
   methods: {
-    async searchMeals() {
-      if (this.searchQuery.length < 2) {
-        this.searchResults = [];
+    getEmptyFoodItem() {
+      return {
+        food_name: '',
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fats: 0,
+        search: '',
+        searchResults: [],
+        isExpanded: false,
+      };
+    },
+    async searchMeals(index) {
+      const query = this.foods[index].search;
+      if (query.length < 2) {
+        this.foods[index].searchResults = [];
         return;
       }
       try {
         const response = await axios.get('/api/v1/meals/search/', {
-          params: { q: this.searchQuery },
+          params: { q: query },
         });
-        this.searchResults = response.data;
+        this.foods[index].searchResults = response.data;
       } catch (error) {
         console.error('Error searching meals:', error);
       }
     },
-    selectMeal(meal) {
-      this.selectedMeal = meal;
-      this.meal.predefined_meal = meal.foodid;
-      // Set the search query to the selected meal description and clear the results.
-      this.searchQuery = meal.fooddescription;
-      this.searchResults = [];
+    debouncedSearch: debounce(function (index) {
+      this.searchMeals(index);
+    }, 300),
+    selectFood(index, item) {
+      this.foods[index] = {
+        ...this.foods[index],
+        food_name: item.food,
+        calories: item.calories || 0,
+        protein: item.proteins || 0,
+        carbs: item.carbs || 0,
+        fats: item.fats || 0,
+        search: item.food,
+        searchResults: [],
+        isExpanded: true,
+      };
     },
-    async submitMeal() {
-      try {
-        const response = await axios.post('/api/v1/meals/create/', this.meal, {
-          headers: {
-            Authorization: `Token ${localStorage.getItem('userToken')}`,
-          },
-        });
-        this.message = 'Meal logged successfully!';
-        // Clear the message after a few seconds
-        setTimeout(() => {
-          this.message = '';
-        }, 3000);
-        this.resetForm();
-      } catch (error) {
-        console.error('Error logging meal:', error);
+    enableManualEntry(index) {
+      this.foods[index].isExpanded = true;
+      this.foods[index].searchResults = [];
+    },
+    addFoodSection() {
+      this.foods.push(this.getEmptyFoodItem());
+    },
+    removeFood(index) {
+      if (this.foods.length > 1) {
+        this.foods.splice(index, 1);
+      } else {
+        // If it's the last item, just reset it
+        this.foods = [this.getEmptyFoodItem()];
       }
     },
-    resetForm() {
-      this.selectedMeal = null;
-      this.meal = {
-        predefined_meal: '',
-        meal_type: 'breakfast',
-        notes: '',
+    async logMeal() {
+      // Filter out any empty or incomplete entries
+      const validFoods = this.foods.filter(f => f.food_name.trim() !== '');
+      
+      if (validFoods.length === 0) {
+        this.message = 'Please add at least one food item';
+        setTimeout(() => (this.message = ''), 3000);
+        return;
+      }
+      
+      const payload = {
+        username: localStorage.getItem('active_username'),
+        meal_name: this.mealName || `Meal on ${new Date().toLocaleString()}`,
+        description: this.description,
+        foods: validFoods.map(f => ({
+          food_name: f.food_name,
+          calories: f.calories,
+          protein: f.protein,
+          carbs: f.carbs,
+          fats: f.fats,
+        })),
       };
-      this.searchQuery = '';
-      this.searchResults = [];
+      
+      try {
+        const res = await axios.post('/api/v1/meals/log/', payload);
+        if (res.data.success) {
+          this.message = res.data.message;
+          this.mealName = '';
+          this.foods = [this.getEmptyFoodItem()];
+          this.description = '';
+          setTimeout(() => (this.message = ''), 3000);
+        }
+      } catch (error) {
+        console.error('Error logging meal:', error);
+        this.message = 'Error saving meal. Please try again.';
+        setTimeout(() => (this.message = ''), 3000);
+      }
     },
   },
 };
+
+function debounce(func, wait = 300) {
+  let timeout;
+  return function (...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
 </script>
 
 <style scoped>
 .meal-dashboard {
-  font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
-  max-width: 600px;
-  margin: 2rem auto;
+  font-family: 'Segoe UI', sans-serif;
+  max-width: 700px;
+  margin: 3rem auto;
 }
 
 .dashboard-card {
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  padding: 24px;
-  margin-bottom: 20px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  padding: 40px;
+  transition: all 0.3s ease;
 }
 
 .card-title {
+  font-size: 1.8rem;
+  margin-bottom: 28px;
   color: #333;
-  font-size: 1.5rem;
   font-weight: 600;
-  margin-top: 0;
+}
+
+.input-group {
   margin-bottom: 20px;
 }
 
-.search-container {
-  position: relative;
-  margin-bottom: 16px;
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #555;
 }
 
-.search-input-wrapper {
-  position: relative;
-}
-
-.search-input {
+.input-field {
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #e0e0e0;
   border-radius: 12px;
-  font-size: 16px;
+  border: 1px solid #e0e0e0;
+  background-color: #fafafa;
+  font-size: 14px;
   transition: all 0.2s ease;
+  margin-bottom: 12px;
 }
 
-.search-input:focus {
+.input-field:focus {
   outline: none;
   border-color: #a4e057;
   box-shadow: 0 0 0 3px rgba(164, 224, 87, 0.2);
 }
 
-.search-icon {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
+.textarea-field {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  background-color: #fafafa;
+  min-height: 80px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  resize: vertical;
+}
+
+.textarea-field:focus {
+  outline: none;
+  border-color: #a4e057;
+  box-shadow: 0 0 0 3px rgba(164, 224, 87, 0.2);
 }
 
 .results-list {
-  list-style: none;
-  margin: 4px 0 0;
-  padding: 0;
-  position: absolute;
-  width: 100%;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  max-height: 200px;
+  border: 1px solid #eee;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  max-height: 150px;
   overflow-y: auto;
+  margin: 0 0 16px 0;
+  padding: 0;
+  list-style: none;
   z-index: 10;
+  position: relative;
 }
 
 .result-item {
   padding: 12px 16px;
   cursor: pointer;
-  transition: background-color 0.15s ease;
-  border-bottom: 1px solid #f2f2f2;
+  border-bottom: 1px solid #f5f5f5;
+  transition: background-color 0.2s ease;
 }
 
 .result-item:last-child {
@@ -247,154 +319,150 @@ export default {
 }
 
 .result-item:hover {
-  background-color: #f9f9f9;
-}
-
-.meal-form-container {
-  margin-top: 24px;
-}
-
-.selected-meal {
-  display: flex;
-  align-items: center;
-  background-color: #f5fbf0;
-  padding: 16px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-}
-
-.meal-icon {
-  font-size: 24px;
-  margin-right: 12px;
-}
-
-.meal-info h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 500;
-  color: #333;
-}
-
-.meal-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  background-color: #f8f8f8;
 }
 
 .form-row {
   display: flex;
-  gap: 16px;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 
-.input-group {
+.form-group {
   flex: 1;
-  display: flex;
-  flex-direction: column;
+  min-width: 80px;
 }
 
-label {
-  font-size: 14px;
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
   font-weight: 500;
   color: #555;
-  margin-bottom: 8px;
+  font-size: 14px;
 }
 
-.custom-select {
-  position: relative;
+.food-section {
+  background-color: #fafafa;
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  border: 1px solid #f0f0f0;
 }
 
-select {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  font-size: 16px;
-  appearance: none;
-  background: url("data:image/svg+xml;utf8,<svg fill='%23888' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat;
-  background-position: right 10px center;
-  background-color: white;
-}
-
-select:focus {
-  outline: none;
-  border-color: #a4e057;
-  box-shadow: 0 0 0 3px rgba(164, 224, 87, 0.2);
-}
-
-.notes-textarea {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  font-size: 16px;
-  min-height: 80px;
-  resize: vertical;
-  font-family: inherit;
-}
-
-.notes-textarea:focus {
-  outline: none;
-  border-color: #a4e057;
-  box-shadow: 0 0 0 3px rgba(164, 224, 87, 0.2);
-}
-
-.submit-btn {
-  display: flex;
+.btn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 14px 24px;
-  background-color: #a4e057;
+  background: #a4e057;
+  border: none;
   color: #333;
   font-weight: 600;
-  border: none;
-  border-radius: 12px;
+  padding: 14px 24px;
+  border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 16px;
-  margin-top: 8px;
+  font-size: 15px;
+  box-shadow: 0 4px 10px rgba(164, 224, 87, 0.2);
 }
 
-.submit-btn:hover {
-  background-color: #93cc4a;
+.btn:hover {
   transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(164, 224, 87, 0.25);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.add-food-btn {
+  background-color: white;
+  border: 2px solid #a4e057;
+  margin-bottom: 24px;
+  animation: fadeIn 0.3s ease;
 }
 
 .btn-icon {
-  font-size: 20px;
+  margin-right: 8px;
   font-weight: bold;
 }
 
-.success-message {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 20px;
-  padding: 12px 16px;
-  background-color: #f0fce9;
-  border-radius: 12px;
-  color: #2e7d32;
-  font-weight: 500;
+.text-btn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 14px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 8px 0;
+  display: block;
+  text-align: left;
 }
 
-.success-icon {
-  background-color: #2e7d32;
-  color: white;
-  width: 20px;
-  height: 20px;
+.text-btn:hover {
+  color: #a4e057;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.food-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: #ff6b6b;
+  cursor: pointer;
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
-/* Transitions */
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s, transform 0.3s;
+.delete-btn:hover {
+  background-color: #fff0f0;
 }
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
+
+.delete-icon {
+  line-height: 1;
+}
+
+.expanded-form {
+  animation: fadeIn 0.3s ease;
+}
+
+.success-message {
+  margin-top: 20px;
+  background: #f0fce9;
+  padding: 16px;
+  border-radius: 12px;
+  color: #2e7d32;
+  font-weight: 500;
+  animation: fadeIn 0.3s ease;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

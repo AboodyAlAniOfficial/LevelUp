@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'meals',
     'daily_goals',
     'accounts',
-
+    'leaderboard',
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
