@@ -170,10 +170,19 @@ export default {
       }
     };
   },
-  mounted() {
-    this.fetchUserId();
-  },
-  methods: {
+    async mounted() {
+    await this.fetchUserId();
+    await this.fetchUserData();
+
+    await this.createDailyGoals();
+    if(this.userId!=null){
+    this.fetchWeightGoal();
+    this.fetchStepsGoal();
+    this.fetchCalorieGoal();
+    this.fetchUserBMR();
+    }
+    },
+    methods: {
     async fetchUserId() {
       const username = localStorage.getItem("active_username");
       const res = await axios.get(`/api/v1/daily_goals/getUserId/`, { params: { username } });
@@ -217,9 +226,169 @@ export default {
         this.calculationError =
           error.response?.data?.error || "Error calculating calories.";
       }
+    },
+  
+  async fetchUserData(){
+    try{
+      const active_user = localStorage.getItem("active_username");
+      const response = await axios .get(`/api/v1/accounts/healthdata/`, {params: {username: active_user, field: 'mass'}});
+
+      if (response.data){
+        this.mass = response.data;
+        console.log("MASS:" + this.mass);
+      }
+
+  //     response = await axios .get(`/api/v1/accounts/healthdata/`, {params: {username: active_user, field: 'age'}});
+
+  //     if (response.data){
+  //       this.age = response.data;
+  //     }
+
+  //     response = await axios .get(`/api/v1/accounts/healthdata/`, {params: {username: active_user, field: 'sex'}});
+
+  //     if (response.data){
+  //       this.sex = response.data;
+  //     }
+
+  //     response = await axios .get(`/api/v1/accounts/healthdata/`, {params: {username: active_user, field: 'height'}});
+
+  //     if(response.data){
+  //       this.height = response.data;
+  //     }
+
+    }catch (error){
+      console.error("Error Fetching Data", error)
+    }
+  },
+
+  async createDailyGoals(){
+    try {
+      const response = await axios .post(`/api/v1/daily_goals/createDailyGoals/`, {user_id: this.userId});
+      if (response.data){
+        
+      }
+
+    }catch (error){
+
+    }
+  },
+
+  async updateCalories(value){
+
+    const updated_bmr = this.bmr/4184 * 86400;
+    const today_calories =  value * updated_bmr;
+    var updated_calories = today_calories;
+    if(this.mass<this.weightGoal){
+
+      updated_calories += 500;
+      console.log("MASS IS LESS THAN TARGET");
+      console.log("TARGET" + this.weightGoal);
+    }else if(this.mass > this.weightGoal){
+    updated_calories -= 500;
+
+    }else{
+
+    }
+
+    console.log("BMR" + this.bmr);
+    
+    try {
+      const response = await axios .post(`/api/v1/daily_goals/updateCalories/${this.userId}`,{calories: updated_calories});
+
+      if (response.data){
+        this.fetchCalorieGoal();
+      }
+    }catch (error){
+      console.error("Error updating calories", error);
+    }
+
+  },
+
+  async fetchUserBMR(){
+
+    try{
+      const active_user = localStorage.getItem("active_username");
+      const response = await axios .get(`/api/v1/accounts/bmr/`, {params: {username: active_user}});
+
+      if(response.data){
+        this.bmr = response.data;
+      }
+    }catch (error){
+      console.error("Error Fetching BMR", error);
+    }
+
+  },
+  fetchWeightGoal() {
+      axios
+        .get(`/api/v1/daily_goals/weightGoal/${this.userId}`)
+        .then((response) => {
+          if (response.data && response.data.Target) {
+            this.weightGoal = response.data.Target.target_weight;
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching weight goal:", error);
+        });
+    },
+    updateWeight() {
+      if (!this.newWeight) return;
+      axios
+        .post(`/api/v1/daily_goals/weight/${this.userId}`, { weight: this.newWeight })
+        .then(() => {
+          this.weightMessage = "Weight goal updated successfully!";
+          this.fetchWeightGoal();
+          this.newWeight = "";
+        })
+        .catch((error) => {
+          console.error("Error updating weight goal:", error);
+          this.weightMessage = "Error updating weight goal.";
+        });
+    },
+    fetchStepsGoal() {
+      axios
+        .get(`/api/v1/daily_goals/dailySteps/${this.userId}`)
+        .then((response) => {
+          if (response.data && response.data.steps) {
+            this.stepsGoal = response.data.steps.daily_steps_goal;
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching steps goal:", error);
+        });
+    },
+    updateSteps() {
+      if (!this.newSteps) return;
+      axios
+        .post(`/api/v1/daily_goals/steps/${this.userId}`, { steps: this.newSteps })
+        .then(() => {
+          this.stepsMessage = "Steps updated successfully!";
+          this.fetchStepsGoal();
+          this.newSteps = "";
+        })
+        .catch((error) => {
+          console.error("Error updating steps goal:", error);
+          this.stepsMessage = "Error updating steps.";
+        });
+    },
+    fetchCalorieGoal() {
+      axios
+        .get(`/api/v1/daily_goals/calories/${this.userId}`)
+        .then((response) => {
+          if (response.data && response.data.data) {
+            this.calorieGoal = response.data.data.daily_calorie_goal;
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching calorie goal:", error);
+        });
+    },updateCalorieGoal(){
+      const active_user = localStorage.getItem("active_username");
+      const response = axios .post(`/api/v1/accounts/bmr/`, {})
+
     }
   }
-};
+  };
+
 </script>
 
 <style scoped>

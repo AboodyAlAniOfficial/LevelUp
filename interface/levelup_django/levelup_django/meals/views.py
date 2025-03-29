@@ -28,27 +28,27 @@ def search_foods(request):
 
 @api_view(['POST'])
 def log_meal(request):
-    print("🔍 Incoming POST to /log_meal/")
-    print("📦 Raw Request Data:", request.data)
+    print("Incoming POST to /log_meal/")
+    print("Raw Request Data:", request.data)
 
     username = request.data.get('username')
     if not username:
-        print("❌ No username provided.")
+        print("No username provided.")
         return Response({'success': False, 'message': 'Username is required.'}, status=400)
 
     try:
         user = User.objects.get(username=username)
-        print(f"✅ Found user: {user.username} (ID: {user.id})")
+        print(f"Found user: {user.username} (ID: {user.id})")
     except User.DoesNotExist:
-        print(f"❌ User not found: {username}")
+        print(f"User not found: {username}")
         return Response({'success': False, 'message': 'User not found.'}, status=404)
 
     food_items_data = request.data.get('foods', [])
     if not food_items_data:
-        print("❌ No food items provided.")
+        print("No food items provided.")
         return Response({'success': False, 'message': 'No food items provided.'}, status=400)
 
-    print(f"🍽️ Food items received: {len(food_items_data)}")
+    print(f"Food items received: {len(food_items_data)}")
 
     try:
         total_calories = sum(float(item.get('calories', 0)) for item in food_items_data)
@@ -56,7 +56,7 @@ def log_meal(request):
         total_carbs = sum(float(item.get('carbs', 0)) for item in food_items_data)
         total_fats = sum(float(item.get('fats', 0)) for item in food_items_data)
 
-        print("📊 Totals — Calories:", total_calories,
+        print("Totals — Calories:", total_calories,
               "Protein:", total_protein,
               "Carbs:", total_carbs,
               "Fats:", total_fats)
@@ -70,7 +70,7 @@ def log_meal(request):
             fats=total_fats,
             description=request.data.get('description', '')
         )
-        print(f"✅ LoggedMeal created with ID {meal.id}")
+        print(f"LoggedMeal created with ID {meal.id}")
 
         for i, food in enumerate(food_items_data):
             FoodItem.objects.create(
@@ -81,13 +81,13 @@ def log_meal(request):
                 carbs=food.get('carbs'),
                 fats=food.get('fats')
             )
-            print(f"🥗 FoodItem #{i+1} added: {food.get('food_name')}")
+            print(f"FoodItem #{i+1} added: {food.get('food_name')}")
 
-        print("✅ Meal and all food items saved successfully.")
+        print("Meal and all food items saved successfully.")
         return Response({'success': True, 'message': 'Meal logged with multiple food items.'}, status=201)
 
     except Exception as e:
-        print("🚨 Error while logging meal:", str(e))
+        print("Error while logging meal:", str(e))
         import traceback
         traceback.print_exc()
         return Response({'success': False, 'message': str(e)}, status=500)
