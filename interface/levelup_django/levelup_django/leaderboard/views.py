@@ -7,30 +7,40 @@ from .models import Follower
 from django.db import connection
 
 @api_view(["GET"])
-def search_users(request):
+def searchUsers(request):
     query = request.GET.get("q", "")
     users = User.objects.filter(username__icontains=query)[:10]  # Limit results
     return JsonResponse({"users": [{"id": u.id, "username": u.username} for u in users]})
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def follow_user(request):
-    user_to_follow = get_object_or_404(User, id=request.data.get("user_id"))
+def followUser(request):
+    # Get the username from the request data
+    username_to_follow = request.data.get("username")
+    
+    # Retrieve the user object based on the username
+    user_to_follow = get_object_or_404(User, username=username_to_follow)
+    
+    # Prevent users from following themselves
     if user_to_follow == request.user:
         return JsonResponse({"error": "You cannot follow yourself"}, status=400)
     
+    # Create a follow relationship
     Follower.objects.get_or_create(follower=request.user, following=user_to_follow)
+    
+    # Return a success response
     return JsonResponse({"message": f"You are now following {user_to_follow.username}"})
+
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def unfollow_user(request):
+def unfollowUser(request):
     user_to_unfollow = get_object_or_404(User, id=request.data.get("user_id"))
     Follower.objects.filter(follower=request.user, following=user_to_unfollow).delete()
     return JsonResponse({"message": f"You have unfollowed {user_to_unfollow.username}"})
 #global
 @api_view(["GET"])
-def leaderboard(request):
+def getLeaderboard(request):
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT 
@@ -52,7 +62,7 @@ def leaderboard(request):
     return JsonResponse({"leaderboard": leaderboard_result})
 #follower
 @api_view(["GET"])
-def followed_leaderboard(request):
+def getFollowedLeaderboard(request):
     current_user_id = request.user.id  
 
     with connection.cursor() as cursor:
