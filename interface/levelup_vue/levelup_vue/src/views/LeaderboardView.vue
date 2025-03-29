@@ -4,16 +4,22 @@
         <h2 class="card-title">Global Leaderboard</h2>
 
         <div class="leaderboard-wrapper">
-          <table>
+          <input 
+          type="text" 
+          v-model="search" 
+          placeholder="Enter a Username"
+          class="search">
+
+          <table class="table">
             <thead>
-              <tr class="table">
-                <th class="table-item">Rank</th>
-                <th class="table-item">Username</th>
-                <th class="table-item">Score</th>
+              <tr>
+                <th>Rank</th>
+                <th>Username</th>
+                <th>Score</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(user, index) in users" :key="user.score">
+              <tr v-for="(user, index) in filteredUsers":key="user.score">
                 <td>{{ index+1 }}</td>
                 <td>{{ user.username }}</td>
                 <td>{{ user.score }}</td>
@@ -23,19 +29,25 @@
         </div>
       </div>
       <div class="leaderboard">
-        <h2 class="card-title" href="#">Private Leaderboard</h2>
+        <h2 class="card-title">Private Leaderboard</h2>
 
         <div class="leaderboard-wrapper">
-          <table>
+          <input 
+          type="text" 
+          v-model="search" 
+          placeholder="Enter a Username"
+          class="search">
+
+          <table class="table">
             <thead>
-              <tr class="table">
+              <tr>
                 <th>Rank</th>
                 <th>Username</th>
                 <th>Score</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(user, index) in fUsers" :key="user.score">
+              <tr v-for="(user, index) in filteredPUsers" :key="user.score">
                 <td>{{ index+1 }}</td>
                 <td>{{ user.username }}</td>
                 <td>{{ user.score }}</td>
@@ -50,7 +62,7 @@
 <script>
 import axios from 'axios'
 
-//Replace if your implementation is different
+//Replace if your implementation is different/does not work with this
 export default {
   name: 'LeaderboardView',
   data() {
@@ -59,6 +71,20 @@ export default {
       fUsers: [],
     }
   },
+  computed: {//Search bar logic 
+    filteredUsers() {
+      return this.users.filter(users => {
+        return users.toLowerCase().username.indexOf(this.search.toLowerCase) > -1
+      })
+    },
+    filteredPUsers() {
+      return this.fUsers.filter(fUsers => {
+        return fUsers.username.toLowerCase().indexOf(this.search.toLowerCase) > -1
+      })
+    }
+  },
+
+  // Should be changed if your backend does not match
   components: {
     mounted() {
       this.getLeaderboard(),
@@ -100,6 +126,15 @@ export default {
   margin-bottom: 20px;
 }
 
+.leaderboard-wrapper {
+  overflow-y: auto;
+  max-height: 200px;
+  overflow: hidden;
+  position:relative;
+  display: flex;
+  flex-direction: column;
+}
+
 .card-title {
   color: #333;
   font-size: 1.5rem;
@@ -110,20 +145,33 @@ export default {
 
 .table {
   margin: 4px 0 0;
-  padding: 0;
+  padding: 8px;
   position: static;
-  width: 35%;
+  width: 100%;
+  padding: 14px 16px;
   background: white;
-  border-radius: 20px;
+  border: 2px solid black;
   border-collapse: collapse;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  max-height: 200px;
-  overflow-y: auto;
   z-index: 10;
 }
 
-th, td {
-  color:#333;
+.search {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.search:focus {
+  outline: none;
+  border-color: #a4e057;
+  box-shadow: 0 0 0 3px rgba(164, 224, 87, 0.2);
+}
+
+.table th, .table td {
+  color:#000000;
   font-size: 1rem;
   font-weight: 600;
   margin-top: 0;
@@ -131,6 +179,6 @@ th, td {
 }
 
 th:not(:last-child), td:not(:last-child) {
-  border-right: 1px solid rgb(0, 0, 0);
+  border-right: 2px solid rgb(0, 0, 0);
 }
 </style>
