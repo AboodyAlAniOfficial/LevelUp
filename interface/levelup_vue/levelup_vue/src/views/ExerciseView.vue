@@ -5,12 +5,12 @@
       <h2 class="card-title">Weight Goal</h2>
       <p>
         Current Target Weight:
-        <span>{{ weightGoal ? weightGoal + " kg" : "Not Set" }}</span>
+        <span>{{ weightGoal ? Math.round(weightGoal) + " " + unit : "Not Set" }}</span>
       </p>
       <input
         type="number"
         v-model="newWeight"
-        placeholder="Enter new target weight (kg)"
+        placeholder="Enter new target weight"
         step="0.01"
         class="search-input"
       />
@@ -35,7 +35,7 @@
         placeholder="Enter daily steps"
         class="search-input"
       />
-      <button class="submit-btn" @click="updateSteps">Update Steps Goal</button>
+      <button class="submit-btn" @click="updateSteps">Update Steps</button>
       <transition name="fade">
         <div v-if="stepsMessage" class="success-message">
           <span class="success-icon">✓</span> {{ stepsMessage }}
@@ -86,9 +86,9 @@
             v-for="result in meal.results"
             :key="result.meal_name"
             class="result-item"
-            @click="selectMeal(key, result.meal_name)"
+            @click="selectMeal(key, result)"
           >
-            {{ result.meal_name }}
+            {{ result }}
           </li>
         </ul>
       </div>
@@ -156,6 +156,7 @@ export default {
       calorieGoal: null,
       mass: null,
       bmr: null,
+      unit: null,
       newWeight: "",
       newSteps: "",
       weightMessage: "",
@@ -172,7 +173,9 @@ export default {
   },
     async mounted() {
     await this.fetchUserId();
+    await this.fetchUserPreference();
     await this.fetchUserData();
+    
 
     await this.createDailyGoals();
     if(this.userId!=null){
@@ -195,7 +198,7 @@ export default {
       const q = this.mealInputs[key].query;
       if (q.length < 2) return (this.mealInputs[key].results = []);
       try {
-        const res = await axios.get(`/api/v1/meals/search_logged_meals/`, {
+        const res = await axios.get(`/api/v1/daily_goals/searchMeals/`, {
           params: { username: localStorage.getItem("active_username"), q },
         });
         this.mealInputs[key].results = res.data;
@@ -238,28 +241,25 @@ export default {
         console.log("MASS:" + this.mass);
       }
 
-  //     response = await axios .get(`/api/v1/accounts/healthdata/`, {params: {username: active_user, field: 'age'}});
-
-  //     if (response.data){
-  //       this.age = response.data;
-  //     }
-
-  //     response = await axios .get(`/api/v1/accounts/healthdata/`, {params: {username: active_user, field: 'sex'}});
-
-  //     if (response.data){
-  //       this.sex = response.data;
-  //     }
-
-  //     response = await axios .get(`/api/v1/accounts/healthdata/`, {params: {username: active_user, field: 'height'}});
-
-  //     if(response.data){
-  //       this.height = response.data;
-  //     }
+    
 
     }catch (error){
       console.error("Error Fetching Data", error)
     }
   },
+  async fetchUserPreference(){
+    const active_user = localStorage.getItem("active_username");
+    try{  
+      const response = await axios .get(`/api/v1/accounts/unit/`, {params: {username: active_user, dimension: 'mass'}});
+
+      if (response.data){
+        this.unit = response.data;
+        console.log("UNIT: " +this.unit);
+      }
+      }catch(error){
+        console.error("Error Fetching Data", error)
+      }
+    },
 
   async createDailyGoals(){
     try {
@@ -323,7 +323,13 @@ export default {
         .get(`/api/v1/daily_goals/weightGoal/${this.userId}`)
         .then((response) => {
           if (response.data && response.data.Target) {
+            if(this.unit==='kg'){
             this.weightGoal = response.data.Target.target_weight;
+            }else{
+            const lbs = response.data.Target.target_weight * 2.205;
+            console.log("lbs: " + lbs);
+            this.weightGoal = lbs;
+          }
           }
         })
         .catch((error) => {
@@ -332,6 +338,12 @@ export default {
     },
     updateWeight() {
       if (!this.newWeight) return;
+      if(this.unit === 'kg'){
+
+      }else{
+        const tempWeight = this.newWeight/2.205;
+        this.newWeight = tempWeight.toFixed(2);
+      }
       axios
         .post(`/api/v1/daily_goals/weight/${this.userId}`, { weight: this.newWeight })
         .then(() => {
@@ -386,7 +398,9 @@ export default {
       const response = axios .post(`/api/v1/accounts/bmr/`, {})
 
     }
-  }
+  
+  },
+  
   };
 
 </script>
@@ -474,6 +488,35 @@ export default {
   align-items: center;
   justify-content: center;
   font-size: 14px;
+}
+
+.results-list {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  max-height: 150px;
+  overflow-y: auto;
+  margin: 0 0 16px 0;
+  padding: 0;
+  list-style: none;
+  z-index: 10;
+  position: relative;
+}
+
+.result-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f5f5f5;
+  transition: background-color 0.2s ease;
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.result-item:hover {
+  background-color: #f8f8f8;
 }
 
 /* Fade transition */

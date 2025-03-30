@@ -27,6 +27,12 @@ def get_api_urls(request):
     }
     
     return Response(api_urls)
+@api_view(['GET'])
+def search_meal_list(request):
+    query = request.query_params.get('q', '')
+    results = LoggedMeal.objects.filter(meal_name__icontains=query)[:10]
+    meal_names = [item.meal_name for item in results]
+    return Response(meal_names)
 
 @api_view(['GET'])
 def search_logged_meals(request):
