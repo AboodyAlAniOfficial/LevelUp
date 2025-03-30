@@ -15,6 +15,7 @@
         <div class="navbar-end">
           <router-link to="/about" class="navbar-item">About</router-link>
 
+          <template v-if="activeUsername()">
           <div class="navbar-item" @click="isOpen = !isOpen">
             <button>Daily Trackers</button>
             <svg viewBox="0 0 1030 638" width="10">
@@ -34,16 +35,15 @@
 
           <div class="navbar-item">
             <div class="buttons">
-              <template v-if="activeUsername()">
                 <router-link to="/profile" class="button is-light">{{ activeUsername() }}</router-link>
                 <button @click="logout">Log Out</button>
-              </template>
-
-              <template v-else>
-                <router-link to="/login" class="button is-light">Log In or Sign Up</router-link>
-              </template>
             </div>
           </div>
+          </template>
+
+          <template v-else>
+            <router-link to="/login" class="button is-light">Log In or Sign Up</router-link>
+          </template>
         </div>
       </div>
     </nav>

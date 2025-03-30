@@ -186,6 +186,7 @@ export default {
     }
     },
     methods: {
+    //fetch user id using the active_username from localStorage
     async fetchUserId() {
       const username = localStorage.getItem("active_username");
       const res = await axios.get(`/api/v1/daily_goals/getUserId/`, { params: { username } });
@@ -194,6 +195,8 @@ export default {
     debouncedSearch: debounce(function (key) {
       this.searchMeals(key);
     }, 300),
+    //sends what the user has currently entered into the meals of breakfast, lunch or dinner to get meals that match the current
+    //character sequence
     async searchMeals(key) {
       const q = this.mealInputs[key].query;
       if (q.length < 2) return (this.mealInputs[key].results = []);
@@ -210,6 +213,7 @@ export default {
       this.mealInputs[key].query = name;
       this.mealInputs[key].results = [];
     },
+    //calculates the users daily calories based on what has been entered for breakfast, lunch and dinner
     async calculateDailyCalories() {
       try {
         const res = await axios.post(`/api/v1/daily_goals/calculateCalories/${this.userId}`, {
@@ -230,7 +234,7 @@ export default {
           error.response?.data?.error || "Error calculating calories.";
       }
     },
-  
+  //gets the users current mass from their profile
   async fetchUserData(){
     try{
       const active_user = localStorage.getItem("active_username");
@@ -238,7 +242,7 @@ export default {
 
       if (response.data){
         this.mass = response.data;
-        console.log("MASS:" + this.mass);
+        
       }
 
     
@@ -247,6 +251,7 @@ export default {
       console.error("Error Fetching Data", error)
     }
   },
+  // gets the users prefered unit of measure for the mass dimension
   async fetchUserPreference(){
     const active_user = localStorage.getItem("active_username");
     try{  
@@ -254,13 +259,13 @@ export default {
 
       if (response.data){
         this.unit = response.data;
-        console.log("UNIT: " +this.unit);
+        
       }
       }catch(error){
         console.error("Error Fetching Data", error)
       }
     },
-
+  //sends a requet to create or get the users healthgoals  
   async createDailyGoals(){
     try {
       const response = await axios .post(`/api/v1/daily_goals/createDailyGoals/`, {user_id: this.userId});
@@ -273,16 +278,20 @@ export default {
     }
   },
 
+  //updates the users calories based on their total daily expenditure
+  //checks if the user's current weight is less than their target weight to determine if more or less calories should be consumed
   async updateCalories(value){
-
+    if(this.bmr === null){
+      const message = "Update User Health Data"
+      alert("Error: " + message);
+    }else{
     const updated_bmr = this.bmr/4184 * 86400;
     const today_calories =  value * updated_bmr;
     var updated_calories = today_calories;
     if(this.mass<this.weightGoal){
 
       updated_calories += 500;
-      console.log("MASS IS LESS THAN TARGET");
-      console.log("TARGET" + this.weightGoal);
+      
     }else if(this.mass > this.weightGoal){
     updated_calories -= 500;
 
@@ -290,7 +299,7 @@ export default {
 
     }
 
-    console.log("BMR" + this.bmr);
+    
     
     try {
       const response = await axios .post(`/api/v1/daily_goals/updateCalories/${this.userId}`,{calories: updated_calories});
@@ -301,9 +310,9 @@ export default {
     }catch (error){
       console.error("Error updating calories", error);
     }
-
+  }
   },
-
+  //gets the users bmr based on their account data
   async fetchUserBMR(){
 
     try{
@@ -318,6 +327,7 @@ export default {
     }
 
   },
+  //gets the users weight goal and checks the users preference of which mass unit to display the data in
   fetchWeightGoal() {
       axios
         .get(`/api/v1/daily_goals/weightGoal/${this.userId}`)
@@ -336,6 +346,7 @@ export default {
           console.error("Error fetching weight goal:", error);
         });
     },
+    //updates the users weight and converts the data from lbs to kg if the user has lbs as their prefered unit
     updateWeight() {
       if (!this.newWeight) return;
       if(this.unit === 'kg'){
@@ -356,6 +367,7 @@ export default {
           this.weightMessage = "Error updating weight goal.";
         });
     },
+    //gets the users steps
     fetchStepsGoal() {
       axios
         .get(`/api/v1/daily_goals/dailySteps/${this.userId}`)
@@ -368,6 +380,7 @@ export default {
           console.error("Error fetching steps goal:", error);
         });
     },
+    //updates the users steps
     updateSteps() {
       if (!this.newSteps) return;
       axios
@@ -382,6 +395,7 @@ export default {
           this.stepsMessage = "Error updating steps.";
         });
     },
+    //gets the users calorie goal
     fetchCalorieGoal() {
       axios
         .get(`/api/v1/daily_goals/calories/${this.userId}`)
