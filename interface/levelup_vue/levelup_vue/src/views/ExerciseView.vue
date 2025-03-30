@@ -282,7 +282,8 @@ export default {
   //checks if the user's current weight is less than their target weight to determine if more or less calories should be consumed
   async updateCalories(value){
     if(this.bmr === null){
-      alert("Update User Profile");
+      const message = "Update User Health Data"
+      alert("Error: " + message);
     }else{
     const updated_bmr = this.bmr/4184 * 86400;
     const today_calories =  value * updated_bmr;
