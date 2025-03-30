@@ -98,8 +98,10 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'HOST': 'localhost',
         'NAME': 'levelup_django',
-        'USER': os.environ["LEVELUP_DBUSER"],
-        'PASSWORD': os.environ["LEVELUP_DBPASS"],
+        # 'USER': os.environ["LEVELUP_DBUSER"],
+        # 'PASSWORD': os.environ["LEVELUP_DBPASS"],
+        'USER': 'postgres',
+        'PASSWORD': 'Sweety@160',
         'OPTIONS': {
             'options': '-c search_path=levelup',
             'passfile': '.my_pgpass'

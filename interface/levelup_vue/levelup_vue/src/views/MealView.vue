@@ -6,7 +6,7 @@
         View All Meals
       </button>
 
-      <h2 class="card-title">Log a Meal with Multiple Items</h2>
+      <h2 class="card-title">Meal Logger</h2>
 
       <!-- Meal Name Field -->
       <div class="input-group">
@@ -126,9 +126,23 @@
 
             <div class="action-buttons">
               <button class="action-btn edit-btn" @click="editMeal(meal)">Edit</button>
-              <button class="action-btn delete-btn" @click="deleteMeal(meal.id)">Delete</button>
+              <button class="action-btn delete-btn" @click="confirmDeleteMeal(meal.id, meal.meal_name)">Delete</button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteConfirmModal" class="modal-overlay">
+      <div class="modal-content delete-confirm-modal">
+        <h3 class="modal-title">Confirm Delete</h3>
+        <p class="confirm-message">Are you sure you want to delete <strong>"{{ mealToDelete.name }}"</strong>?</p>
+        <p class="confirm-warning">This action cannot be undone.</p>
+        
+        <div class="confirm-actions">
+          <button @click="cancelDelete" class="btn cancel-btn">Cancel</button>
+          <button @click="confirmDelete" class="btn confirm-delete-btn">Delete</button>
         </div>
       </div>
     </div>
@@ -150,6 +164,12 @@ export default {
       expandedMeals: [],
       isEditing: false,
       editingMealId: null,
+      // New properties for delete confirmation
+      showDeleteConfirmModal: false,
+      mealToDelete: {
+        id: null,
+        name: ''
+      }
     };
   },
   computed: {
@@ -248,7 +268,13 @@ export default {
         const res = await axios[method](url, payload);
 
         if (res.data.success) {
-          this.message = res.data.message;
+          // Set appropriate message based on number of food items
+          if (validFoods.length === 1) {
+            this.message = this.isEditing ? 'Meal updated successfully' : 'Single item meal logged successfully';
+          } else {
+            this.message = this.isEditing ? 'Meal updated successfully' : 'Meal logged with multiple items';
+          }
+          
           this.mealName = '';
           this.foods = [this.getEmptyFoodItem()];
           this.description = '';
@@ -280,13 +306,33 @@ export default {
         this.expandedMeals.push(mealId);
       }
     },
-    async deleteMeal(mealId) {
+    // New methods for delete confirmation
+    confirmDeleteMeal(mealId, mealName) {
+      this.mealToDelete = {
+        id: mealId,
+        name: mealName
+      };
+      this.showDeleteConfirmModal = true;
+    },
+    async confirmDelete() {
       try {
-        await axios.delete(`/api/v1/meals/${mealId}/delete/`);
+        await axios.delete(`/api/v1/meals/${this.mealToDelete.id}/delete/`);
         this.fetchAllMeals();
+        this.showDeleteConfirmModal = false;
+        this.message = 'Meal deleted successfully';
+        setTimeout(() => (this.message = ''), 3000);
       } catch (err) {
         console.error('Failed to delete meal:', err);
+        this.message = 'Error deleting meal. Please try again.';
+        setTimeout(() => (this.message = ''), 3000);
       }
+    },
+    cancelDelete() {
+      this.showDeleteConfirmModal = false;
+      this.mealToDelete = {
+        id: null,
+        name: ''
+      };
     },
     editMeal(meal) {
       this.isEditing = true;
@@ -734,6 +780,49 @@ function debounce(func, wait = 300) {
   padding: 30px 20px;
   color: #777;
   font-size: 16px;
+}
+
+/* Delete Confirmation Modal Styles */
+.delete-confirm-modal {
+  max-width: 450px;
+  text-align: center;
+}
+
+.confirm-message {
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: #444;
+}
+
+.confirm-warning {
+  color: #ff6b6b;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.cancel-btn {
+  background: transparent;
+  border: 2px solid #ccc;
+  color: #666;
+}
+
+.cancel-btn:hover {
+  background: #f5f5f5;
+}
+
+.confirm-delete-btn {
+  background: #ff6b6b;
+  color: white;
+}
+
+.confirm-delete-btn:hover {
+  background: #ff5252;
 }
 
 @keyframes fadeIn {

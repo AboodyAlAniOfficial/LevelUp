@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@vue/cli": "^5.0.8",
-    "axios": "^1.8.2",
+    "axios": "^1.8.4",
     "bulma": "^1.0.3",
     "chart.js": "^4.4.8",
     "core-js": "^3.8.3",

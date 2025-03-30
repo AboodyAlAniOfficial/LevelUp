@@ -6,6 +6,8 @@
 > pip install django-rest-framework\
 > pip install djoser\
 > pip install pillow\
+> pip install django-cors-headers\
+> pip install psycopg2-binary\
 > django-admin startproject levelup_django\
 > cd levelup_django
 
