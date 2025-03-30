@@ -2,6 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from .models import LoggedMeal, FoodItem, PredefinedDatabase
+from rest_framework import status
 
 @api_view(['GET'])
 def index(request):
@@ -10,7 +11,7 @@ def index(request):
 @api_view(['GET'])
 def search_foods(request):
     query = request.query_params.get('q', '')
-    results = PredefinedDatabase.objects.filter(Food__icontains=query)[:10]  # Limit for efficiency
+    results = PredefinedDatabase.objects.filter(Food__icontains=query)[:10]
     data = [
         {
             "food_id": item.Food_id,
@@ -72,7 +73,7 @@ def log_meal(request):
         )
         print(f"LoggedMeal created with ID {meal.id}")
 
-        for i, food in enumerate(food_items_data):
+        for food in food_items_data:
             FoodItem.objects.create(
                 meal=meal,
                 food_name=food.get('food_name'),
@@ -81,7 +82,6 @@ def log_meal(request):
                 carbs=food.get('carbs'),
                 fats=food.get('fats')
             )
-            print(f"FoodItem #{i+1} added: {food.get('food_name')}")
 
         print("Meal and all food items saved successfully.")
         return Response({'success': True, 'message': 'Meal logged with multiple food items.'}, status=201)
@@ -91,3 +91,83 @@ def log_meal(request):
         import traceback
         traceback.print_exc()
         return Response({'success': False, 'message': str(e)}, status=500)
+
+@api_view(['GET'])
+def get_user_meals(request):
+    username = request.query_params.get('username')
+    if not username:
+        return Response({'success': False, 'message': 'Username is required.'}, status=400)
+
+    try:
+        user = User.objects.get(username=username)
+        meals = LoggedMeal.objects.filter(user=user).order_by('-created_at')
+        data = []
+        for meal in meals:
+            foods = [
+                {
+                    "food_name": f.food_name,
+                    "calories": f.calories,
+                    "protein": f.protein,
+                    "carbs": f.carbs,
+                    "fats": f.fats,
+                }
+                for f in meal.foods.all()
+            ]
+            data.append({
+                "id": meal.id,
+                "meal_name": meal.meal_name,
+                "description": meal.description,
+                "date": meal.created_at.strftime('%Y-%m-%d %H:%M'),
+                "foods": foods
+            })
+        return Response({"meals": data})
+
+    except User.DoesNotExist:
+        return Response({'success': False, 'message': 'User not found.'}, status=404)
+
+@api_view(['DELETE'])
+def delete_meal(request, meal_id):
+    try:
+        meal = LoggedMeal.objects.get(id=meal_id)
+        meal.delete()
+        return Response({"success": True, "message": "Meal deleted successfully."})
+    except LoggedMeal.DoesNotExist:
+        return Response({"success": False, "message": "Meal not found."}, status=404)
+
+@api_view(['PUT'])
+def update_meal(request, meal_id):
+    print("UPDATE REQUEST DATA:", request.data)
+    try:
+        meal = LoggedMeal.objects.get(id=meal_id)
+    except LoggedMeal.DoesNotExist:
+        return Response({"success": False, "message": "Meal not found."}, status=404)
+
+    food_items_data = request.data.get('foods', [])
+    if not food_items_data:
+        return Response({'success': False, 'message': 'No food items provided.'}, status=400)
+
+    try:
+        meal.meal_name = request.data.get('meal_name', meal.meal_name)
+        meal.description = request.data.get('description', meal.description)
+        meal.calories = sum(float(item.get('calories', 0)) for item in food_items_data)
+        meal.protein = sum(float(item.get('protein', 0)) for item in food_items_data)
+        meal.carbs = sum(float(item.get('carbs', 0)) for item in food_items_data)
+        meal.fats = sum(float(item.get('fats', 0)) for item in food_items_data)
+        meal.save()
+
+        meal.foods.all().delete()
+        for food in food_items_data:
+            FoodItem.objects.create(
+                meal=meal,
+                food_name=food.get('food_name'),
+                calories=food.get('calories'),
+                protein=food.get('protein'),
+                carbs=food.get('carbs'),
+                fats=food.get('fats')
+            )
+
+        return Response({"success": True, "message": "Meal updated successfully."})
+
+    except Exception as e:
+        print("UPDATE ERROR:", str(e)) 
+        return Response({"success": False, "message": str(e)}, status=500)
