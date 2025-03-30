@@ -281,7 +281,9 @@ export default {
   //updates the users calories based on their total daily expenditure
   //checks if the user's current weight is less than their target weight to determine if more or less calories should be consumed
   async updateCalories(value){
-
+    if(this.bmr === null){
+      alert("Update User Profile");
+    }else{
     const updated_bmr = this.bmr/4184 * 86400;
     const today_calories =  value * updated_bmr;
     var updated_calories = today_calories;
@@ -307,7 +309,7 @@ export default {
     }catch (error){
       console.error("Error updating calories", error);
     }
-
+  }
   },
   //gets the users bmr based on their account data
   async fetchUserBMR(){
