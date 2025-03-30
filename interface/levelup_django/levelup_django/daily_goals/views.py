@@ -31,34 +31,19 @@ def get_api_urls(request):
 #character sequence
 @api_view(['GET'])
 def search_meal_list(request):
+    
     query = request.query_params.get('q', '')
-    results = LoggedMeal.objects.filter(meal_name__icontains=query)[:10]
+    username = request.GET.get('username', '')
+    if not username:
+        return Response({"error": "username was not provided"}, status=400)
+    try:
+        userVal = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response({"error": "user does not exist"}, status=400)
+    
+    results = LoggedMeal.objects.filter(user=userVal, meal_name__icontains=query)[:10]
     meal_names = [item.meal_name for item in results]
     return Response(meal_names)
-
-@api_view(['GET'])
-def search_logged_meals(request):
-    query = request.GET.get('q', '')
-    username = request.GET.get('user', '')
-
-    if not username:
-        return Response({'error': 'Username is required'}, status=400)
-
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=404)
-
-    meals = LoggedMeal.objects.filter(user=user, meal_name__icontains=query).order_by('-created_at')[:10]
-    results = [
-        {
-            'meal_name': meal.meal_name,
-            'calories': meal.calories,
-            'id': meal.id,
-            'created_at': meal.created_at
-        } for meal in meals
-    ]
-    return Response(results)
 
 #Creates a healthgoals row in the database if the user does not have one
 #If the user has a healthgoal then it returns the healthgoals of the user
