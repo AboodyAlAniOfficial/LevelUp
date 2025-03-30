@@ -8,23 +8,22 @@
         <div class="feature-content">
           <h2 class="feature-title">User Profile</h2>
           <p class="feature-description">
-            The user can manage their account as well as see information related to keep track of your fitness progress here.
+            Manage your account settings and track your fitness progress with personalized information.
           </p>
           <div class="feature-details">
-            <p>These includes:</p>
+            <p>Information includes:</p>
             <ul class="feature-list">
-              <li>User's weight, height, and gender</li>
-              <li>Their BMI score and BMR score (using Mifflin-St Jeor Equation)</li>
-              <li>Their exercise frequency:
+              <li>Personal metrics: weight, height, age, and sex</li>
+              <li>BMI and BMR calculations using the Mifflin-St Jeor Equation</li>
+              <li>Activity level selection:
                 <ul>
-                  <li>Sedentary</li>
-                  <li>1-3 times a week</li>
-                  <li>4-5 times a week</li>
-                  <li>Daily or intense exercise 3-4 times a week</li>
-                  <li>Daily intense exercise</li>
-                  <li>Very intense daily exercise</li>
+                  <li>Not Active</li>
+                  <li>Moderately Active</li>
+                  <li>Very Active</li>
                 </ul>
               </li>
+              <li>Measurement unit preferences (metric/imperial)</li>
+              <li>Privacy settings for tracker and leaderboard data</li>
             </ul>
           </div>
         </div>
@@ -35,10 +34,19 @@
       <div class="feature-section">
         <div class="feature-icon">📊</div>
         <div class="feature-content">
-          <h2 class="feature-title">Daily Tracker</h2>
+          <h2 class="feature-title">Daily Trackers</h2>
           <p class="feature-description">
-            Where you can track your daily calorie intake and exercises done based on BMI and BMR calculations.
+            Monitor and log all aspects of your fitness journey with comprehensive tracking tools.
           </p>
+          <div class="feature-details">
+            <ul class="feature-list">
+              <li>Meal Logger - track what you eat with food search and manual entry options</li>
+              <li>Weight Goal - set and update your target weight</li>
+              <li>Daily Steps - monitor your physical activity</li>
+              <li>Daily Calorie Goal - based on your activity level</li>
+              <li>Calorie Calculator - track meals throughout the day (breakfast, lunch, dinner)</li>
+            </ul>
+          </div>
         </div>
       </div>
       
@@ -47,10 +55,38 @@
       <div class="feature-section">
         <div class="feature-icon">🏆</div>
         <div class="feature-content">
-          <h2 class="feature-title">Leaderboard</h2>
+          <h2 class="feature-title">Leaderboards</h2>
           <p class="feature-description">
-            This is where you can compare your fitness progress with others with a score based on how committed you are to your fitness goal.
+            Compare your fitness progress with others in the community, with privacy options to control what information is shared.
           </p>
+          <p class="feature-sub-description">
+            Your score is calculated based on your consistency and progress toward your fitness goals.
+          </p>
+        </div>
+      </div>
+
+      <div class="feature-divider"></div>
+      
+      <div class="feature-section">
+        <div class="feature-icon">⚙️</div>
+        <div class="feature-content">
+          <h2 class="feature-title">Preferences</h2>
+          <p class="feature-description">
+            Customize your experience with personalized settings.
+          </p>
+          <div class="feature-details">
+            <ul class="feature-list">
+              <li>Measurement Units:
+                <ul>
+                  <li>Length Unit (meter/inch)</li>
+                  <li>Mass Unit (kilogram/pound)</li>
+                  <li>Energy Unit (kilojoule/calorie)</li>
+                </ul>
+              </li>
+              <li>Privacy Settings - control who can see your tracker and leaderboard data</li>
+              <li>Health Data - input personal information used to calculate BMR</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -114,6 +150,13 @@
   color: #555;
   margin-bottom: 16px;
   line-height: 1.5;
+}
+
+.feature-sub-description {
+  color: #666;
+  font-style: italic;
+  margin-bottom: 0;
+  line-height: 1.4;
 }
 
 .feature-details {
