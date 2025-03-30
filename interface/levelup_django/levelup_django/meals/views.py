@@ -29,38 +29,24 @@ def search_foods(request):
 
 @api_view(['POST'])
 def log_meal(request):
-    print("Incoming POST to /log_meal/")
-    print("Raw Request Data:", request.data)
-
     username = request.data.get('username')
     if not username:
-        print("No username provided.")
         return Response({'success': False, 'message': 'Username is required.'}, status=400)
 
     try:
         user = User.objects.get(username=username)
-        print(f"Found user: {user.username} (ID: {user.id})")
     except User.DoesNotExist:
-        print(f"User not found: {username}")
         return Response({'success': False, 'message': 'User not found.'}, status=404)
 
     food_items_data = request.data.get('foods', [])
     if not food_items_data:
-        print("No food items provided.")
         return Response({'success': False, 'message': 'No food items provided.'}, status=400)
-
-    print(f"Food items received: {len(food_items_data)}")
 
     try:
         total_calories = sum(float(item.get('calories', 0)) for item in food_items_data)
         total_protein = sum(float(item.get('protein', 0)) for item in food_items_data)
         total_carbs = sum(float(item.get('carbs', 0)) for item in food_items_data)
         total_fats = sum(float(item.get('fats', 0)) for item in food_items_data)
-
-        print("Totals — Calories:", total_calories,
-              "Protein:", total_protein,
-              "Carbs:", total_carbs,
-              "Fats:", total_fats)
 
         meal = LoggedMeal.objects.create(
             user=user,
@@ -71,7 +57,6 @@ def log_meal(request):
             fats=total_fats,
             description=request.data.get('description', '')
         )
-        print(f"LoggedMeal created with ID {meal.id}")
 
         for food in food_items_data:
             FoodItem.objects.create(
@@ -83,13 +68,9 @@ def log_meal(request):
                 fats=food.get('fats')
             )
 
-        print("Meal and all food items saved successfully.")
         return Response({'success': True, 'message': 'Meal logged with multiple food items.'}, status=201)
 
     except Exception as e:
-        print("Error while logging meal:", str(e))
-        import traceback
-        traceback.print_exc()
         return Response({'success': False, 'message': str(e)}, status=500)
 
 @api_view(['GET'])
@@ -136,7 +117,6 @@ def delete_meal(request, meal_id):
 
 @api_view(['PUT'])
 def update_meal(request, meal_id):
-    print("UPDATE REQUEST DATA:", request.data)
     try:
         meal = LoggedMeal.objects.get(id=meal_id)
     except LoggedMeal.DoesNotExist:
@@ -169,5 +149,4 @@ def update_meal(request, meal_id):
         return Response({"success": True, "message": "Meal updated successfully."})
 
     except Exception as e:
-        print("UPDATE ERROR:", str(e)) 
         return Response({"success": False, "message": str(e)}, status=500)
