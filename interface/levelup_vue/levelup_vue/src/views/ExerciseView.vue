@@ -288,14 +288,36 @@ export default {
     const updated_bmr = this.bmr/4184 * 86400;
     const today_calories =  value * updated_bmr;
     var updated_calories = today_calories;
-    if(this.mass<this.weightGoal){
+    const massKg = this.mass;
+    const massLbs = this.mass*2.205;
+    if(this.unit == 'kg'){
+      
+    
+    
+    
+    if(massKg<this.weightGoal){
 
       updated_calories += 500;
       
-    }else if(this.mass > this.weightGoal){
+    }else if(massKg > this.weightGoal){
     updated_calories -= 500;
 
     }else{
+
+    }
+    }else{
+
+      if(massLbs<this.weightGoal){
+
+        updated_calories += 500;
+
+      }else if(massLbs > this.weightGoal){
+        updated_calories -= 500;
+
+      }else{
+
+      }
+
 
     }
 
@@ -360,6 +382,7 @@ export default {
         .then(() => {
           this.weightMessage = "Weight goal updated successfully!";
           this.fetchWeightGoal();
+          
           this.newWeight = "";
         })
         .catch((error) => {
