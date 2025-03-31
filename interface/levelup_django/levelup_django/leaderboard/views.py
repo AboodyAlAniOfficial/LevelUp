@@ -3,91 +3,139 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from .models import Follower
+from .models import Followers
 from django.db import connection
-
+from django.db.models import F, Value, ExpressionWrapper
+from django.db.models.fields import IntegerField
 @api_view(["GET"])
 def searchUsers(request):
     query = request.GET.get("q", "")
-    users = User.objects.filter(username__icontains=query)[:10]  # Limit results
+    print(f"Query received: {query}")  # Debugging log
+    users = User.objects.filter(username__icontains=query)
+    print(f"Users found: {users}")  # Debugging log
     return JsonResponse({"users": [{"id": u.id, "username": u.username} for u in users]})
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
 def followUser(request):
-    # Get the username from the request data
-    username_to_follow = request.data.get("username")
-    
-    # Retrieve the user object based on the username
+    # Retrieve the usernames of the follower and the user to follow
+    follower_username = request.data.get("follower_username")  # The username of the follower
+    username_to_follow = request.data.get("username_to_follow")  # The username of the user to be followed
+
+    # Validate input
+    if not follower_username or not username_to_follow:
+        return JsonResponse({"error": "Both follower and username to follow are required."}, status=400)
+
+    # Ensure the user to follow exists
     user_to_follow = get_object_or_404(User, username=username_to_follow)
-    
-    # Prevent users from following themselves
-    if user_to_follow == request.user:
-        return JsonResponse({"error": "You cannot follow yourself"}, status=400)
-    
-    # Create a follow relationship
-    Follower.objects.get_or_create(follower=request.user, following=user_to_follow)
-    
-    # Return a success response
-    return JsonResponse({"message": f"You are now following {user_to_follow.username}"})
+
+    # Prevent self-follow
+    if follower_username == username_to_follow:
+        return JsonResponse({"error": "You cannot follow yourself."}, status=400)
+
+    # If the follower is an anonymous user, use a specific "anonymous" identifier
+    if follower_username == "anonymous":
+        follower = None  # Or you can create a placeholder "anonymous" user if needed
+    else:
+        # Use the username of the follower to retrieve the User object
+        follower = get_object_or_404(User, username=follower_username)
+
+    # Check if the follower is already following the user
+    if Followers.objects.filter(user_id=follower, following_id=user_to_follow).exists():
+        return JsonResponse({"error": f"You are already following {user_to_follow.username}."}, status=400)
+
+    # Create or update the follow relationship
+    Followers.objects.get_or_create(user_id=follower, following_id=user_to_follow)
+    print(f"Follower: {follower}, User to follow: {user_to_follow}")
+    print(f"Checking if already following...")
+    return JsonResponse({"message": f"{follower_username} is now following {user_to_follow.username}"}, status=200)
+
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
 def unfollowUser(request):
-    user_to_unfollow = get_object_or_404(User, id=request.data.get("user_id"))
-    Follower.objects.filter(follower=request.user, following=user_to_unfollow).delete()
+    follower_username = request.data.get("follower_username")
+    username_to_unfollow = request.data.get("username_to_unfollow")
+    
+    if not follower_username or not username_to_unfollow:
+        return JsonResponse({"error": "Both follower and username to unfollow are required."}, status=400)
+
+    user_to_unfollow = get_object_or_404(User, username=username_to_unfollow)
+    follower = get_object_or_404(User, username=follower_username)
+
+    # Remove the follow relationship
+    followRelationship = Followers.objects.filter(user_id=follower, following_id=user_to_unfollow)
+    
+    if not followRelationship.exists():
+        return JsonResponse({"error": "You are not following this user."}, status=400)
+
+    followRelationship.delete()
+
     return JsonResponse({"message": f"You have unfollowed {user_to_unfollow.username}"})
+
 #global
+
+
 @api_view(["GET"])
 def getLeaderboard(request):
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT 
-                u.username,
-                COALESCE(SUM(e.duration_minutes) * 100, 0) AS score
-            FROM levelup.Users u
-            LEFT JOIN levelup.Exercises e ON u.user_id = e.user_id
-            GROUP BY u.user_id, u.username
-            ORDER BY score DESC;
-        """)
-        
-        leaderboard_data = cursor.fetchall()
+    leaderboard_data = []
 
-    leaderboard_result = [
-        {idx + 1, row[0], row[1]}
-        for idx, row in enumerate(leaderboard_data)
-    ]
+    # Query all users
+    users = User.objects.all()
 
-    return JsonResponse({"leaderboard": leaderboard_result})
+    for user in users:
+        # Attempt to get the corresponding HealthGoals entry, or set to None if not found
+        health_goal = HealthGoal.objects.filter(user=user).first()
+
+        # If the user has a HealthGoals entry, use that. Otherwise, use 0 as the score
+        score = health_goal.daily_steps_goal * 100 if health_goal else 0
+        leaderboard_data.append({
+            'user': user.username,
+            'score': score  
+        })
+
+    # Sort the leaderboard by score in descending order
+    leaderboard_data.sort(key=lambda x: x['score'], reverse=True)
+
+    # Add ranking information
+    for index, entry in enumerate(leaderboard_data):
+        entry['rank'] = index + 1
+
+    return JsonResponse(leaderboard_data, safe=False)
+
+
+
+# Function to get user ID based on username
+def getuserid(request):
+    username = request.GET.get('username')  # Get the 'username' from query parameters
+    if not username:
+        return JsonResponse({"error": "Username is required"}, status=400)
+
+    # Try to fetch the user based on the username
+    user = get_object_or_404(User, username=username)  # Modify if you have a custom User model
+    return JsonResponse({"id": user.id})  # Return the user ID in the response
+
 #follower
+# PLeaderboard (Followed users only)
 @api_view(["GET"])
-def getFollowedLeaderboard(request):
-    current_user_id = request.user.id  
+def getPLeaderboard(request):
+    current_user = request.user
 
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            WITH FollowedUsers AS (
-                SELECT follows_user_id AS followed_id 
-                FROM levelup.Followers 
-                WHERE user_id = %s
-            )
-            SELECT 
-                u.username,
-                COALESCE(SUM(e.duration_minutes) * 100, 0) AS score
-            FROM levelup.Users u
-            JOIN FollowedUsers f ON u.user_id = f.followed_id
-            LEFT JOIN levelup.Exercises e ON u.user_id = e.user_id
-            GROUP BY u.user_id, u.username
-            ORDER BY score DESC;
-        """, [current_user_id])
-        
-        leaderboard_data = cursor.fetchall()
+    # Fetch followed users
+    followed_users = Followers.objects.filter(user_id=current_user).values_list('following_id', flat=True)
+    # Filter HealthGoals for followed users and calculate leaderboard
+    leaderboard = HealthGoal.objects.filter(user_id__in=followed_users).annotate(
+        score=F('daily_steps_goal') * 100
+    ).order_by('-daily_steps_goal')
 
-    # Format response with Rank, Username, Score
-    leaderboard_result = [
-        {idx + 1, row[0], row[1]}
-        for idx, row in enumerate(leaderboard_data)
+    leaderboard_data = [
+        {
+            'rank': index + 1,
+            'user': entry.user.username,
+            'score': entry.score
+        }
+        for index, entry in enumerate(leaderboard)
     ]
 
-    return JsonResponse({"leaderboard": leaderboard_result})
+    return JsonResponse(leaderboard_data, safe=False)
+
+    
