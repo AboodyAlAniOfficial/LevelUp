@@ -7,6 +7,7 @@ from .models import Followers
 from django.db import connection
 from django.db.models import F, Value, ExpressionWrapper
 from django.db.models.fields import IntegerField
+from daily_goals.models import daily_goals
 @api_view(["GET"])
 def searchUsers(request):
     query = request.GET.get("q", "")
@@ -83,11 +84,9 @@ def getLeaderboard(request):
     users = User.objects.all()
 
     for user in users:
-        # Attempt to get the corresponding HealthGoals entry, or set to None if not found
-        health_goal = HealthGoal.objects.filter(user=user).first()
+        health_goal = daily_goals.objects.filter(user=user).values_list('daily_steps_goal', flat=True)
+        score = health_goal[0] * 7 if health_goal else 0  # Handle empty or missing goals
 
-        # If the user has a HealthGoals entry, use that. Otherwise, use 0 as the score
-        score = health_goal.daily_steps_goal * 100 if health_goal else 0
         leaderboard_data.append({
             'user': user.username,
             'score': score  
@@ -111,31 +110,63 @@ def getuserid(request):
         return JsonResponse({"error": "Username is required"}, status=400)
 
     # Try to fetch the user based on the username
-    user = get_object_or_404(User, username=username)  # Modify if you have a custom User model
-    return JsonResponse({"id": user.id})  # Return the user ID in the response
+    user = get_object_or_404(User, username=username)  
+    return JsonResponse({"id": user.id}) 
 
 #follower
 # PLeaderboard (Followed users only)
 @api_view(["GET"])
 def getPLeaderboard(request):
-    current_user = request.user
+    current_user_username = request.GET.get("username")  # Correct query parameter retrieval
+    
+    if not current_user_username:
+        print("No username provided in request.")
+        return JsonResponse({"error": "username parameter is required."}, status=400)
 
-    # Fetch followed users
-    followed_users = Followers.objects.filter(user_id=current_user).values_list('following_id', flat=True)
-    # Filter HealthGoals for followed users and calculate leaderboard
-    leaderboard = HealthGoal.objects.filter(user_id__in=followed_users).annotate(
-        score=F('daily_steps_goal') * 100
-    ).order_by('-daily_steps_goal')
+    try:
+        current_user = User.objects.get(username=current_user_username)
+        print(f"Current User Found: {current_user.username}")
+    except User.DoesNotExist:
+        print(f"User with username '{current_user_username}' does not exist.")
+        return JsonResponse({"error": f"User '{current_user_username}' does not exist."}, status=404)
 
-    leaderboard_data = [
-        {
-            'rank': index + 1,
-            'user': entry.user.username,
-            'score': entry.score
-        }
-        for index, entry in enumerate(leaderboard)
-    ]
+    # Retrieve followed users' IDs
+    followed_users_ids = Followers.objects.filter(user_id=current_user).values_list('following_id', flat=True)
+    print(f"Followed Users IDs: {followed_users_ids}")
 
-    return JsonResponse(leaderboard_data, safe=False)
+    # Check if there are no followed users
+    if not followed_users_ids:
+        print("No followed users found.")
+        return JsonResponse([], safe=False)
+
+    # Retrieve User objects for followed users
+    followed_users = User.objects.filter(id__in=followed_users_ids)
+    print(f"Followed Users: {[user.username for user in followed_users]}")
+
+    fleaderboard_data = []
+    health_goal = daily_goals.objects.filter(user=current_user).values_list('daily_steps_goal', flat=True)
+    score = health_goal[0] * 7 if health_goal else 0
+    fleaderboard_data.append({
+        'user': current_user.username,
+        'score': score
+    })
+    for follower in followed_users:
+        health_goal = daily_goals.objects.filter(user=follower).values_list('daily_steps_goal', flat=True)
+        score = health_goal[0] * 7 if health_goal else 0
+        print(f"Follower: {follower.username}, Score: {score}")
+
+        fleaderboard_data.append({
+            'user': follower.username,
+            'score': score
+        })
+
+    fleaderboard_data.sort(key=lambda x: x['score'], reverse=True)
+
+    for index, entry in enumerate(fleaderboard_data):
+        entry['rank'] = index + 1
+
+    print(f"Final Leaderboard Data: {fleaderboard_data}")
+    return JsonResponse(fleaderboard_data, safe=False)
+
 
     
