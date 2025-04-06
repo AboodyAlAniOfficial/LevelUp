@@ -10,6 +10,9 @@
     <button @click="followUser" class="followButton">Follow</button>
     <button @click="unfollowUser" class="unfollowButton">Unfollow</button>
   </div>
+  <div class = "followresults">
+      <p v-if= "followMessage">{{ followMessage }}</p>
+  </div>
   <div class="leaderboard-dashboard">
     <div class="leaderboard">
       <h2 class="card-title">Global Leaderboard</h2>
@@ -24,9 +27,9 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(user, index) in filteredUsers" :key="user.score">
+            <tr v-for="(user, index) in users" :key="user.username">
               <td>{{ index + 1 }}</td>
-              <td>{{ user.username }}</td>
+              <td>{{ user.user }}</td>
               <td>{{ user.score || '0'}}</td>
             </tr>
           </tbody>
@@ -46,9 +49,9 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(user, index) in filteredPUsers" :key="user.score">
+            <tr v-for="(user, index) in fUsers" :key="user.user">
               <td>{{ index + 1 }}</td>
-              <td>{{ user.username }}</td>
+              <td>{{ user.user }}</td>
               <td>{{ user.score }}</td>
             </tr>
           </tbody>
@@ -61,90 +64,110 @@
 <script>
 import axios from "axios";
 
-//Replace if your implementation is different/does not work with this
 export default {
   name: "LeaderboardView",
   data() {
     return {
       users: [],
       fUsers: [],
-      search: "",
+      filteredResults: [],
+      filteredFResults: [],
+      search: "", // Search term for filtering
+      followMessage: "",
     };
   },
-computed: {
-  // Search bar logic for users
+  computed: {
   filteredUsers() {
-    return this.users.filter(user => user.username.toLowerCase().includes(this.search.toLowerCase()));
-  },
-  
-  // Search bar logic for followers (filteredPUsers)
-  filteredPUsers() {
-    return this.fUsers.filter(user => user.username.toLowerCase().includes(this.search.toLowerCase()));
-  }
-},
-
-  // Should be changed if your backend does not match
-  components: {
-    mounted() {
-      this.getLeaderboard(), this.getPLeaderboard();
+        return this.search.trim()
+      ? this.users.filter(user =>
+          (user.username || "").toLowerCase().includes(this.search.toLowerCase())
+        )
+      : this.users;
+      return this.filteredResults
     },
-  },
-methods: {
-  async searchUsers() {
-    try {
-      const response = await axios.get('/api/v1/leaderboard/search/', {
-        params: { q: this.search }, // Pass the search query to the backend
-      });
-      this.users = response.data.users; // Update the users array with search results
-    } catch (error) {
-      console.error('Error searching users:', error);
-    }
-  },
-  async followUser() {
-    try {
-      const username= localStorage.getItem('active_username');  ;  // Get the active user's username from localStorage
-      const response = await axios.post("/api/v1/leaderboard/follow/", {
-        follower_username: username,  // Pass the active user's username as the follower
-        username_to_follow: this.search,  // The username to follow, taken from your search input
-    });
-      console.log("User followed successfully:", response.data);
-  } catch (error) {
-      console.error("Error following user:", error.response?.data || error.message);
-  }
-},
-  async unfollowUser() {
-    try {
-      const username = localStorage.getItem('active_username'); // Get the active user's username from localStorage
-      const response = await axios.post("/api/v1/leaderboard/unfollow/", {
-        follower_username: username,  // Pass the active user's username as the follower
-        username_to_unfollow: this.search,  // The username to unfollow, taken from your search input
-    });
-      console.log("User unfollowed successfully:", response.data);
-  } catch (error) {
-      console.error("Error unfollowing user:", error.response?.data || error.message);
-  }
-},
 
+    filteredPUsers() {
+      // Show all followers if search is empty
+          this.filteredFResults = this.search.trim()
+      ? this.users.filter(user =>
+          (user.username || "").toLowerCase().includes(this.search.toLowerCase())
+        )
+      : this.fUsers;
+      return this.filteredFResults
+      },
+  },
+  mounted() {
+    // Fetch leaderboard data when component mounts
+    this.getLeaderboard();
+    this.getPLeaderboard();
+    this.searchUsers();
+  },
+  methods: {
     async getLeaderboard() {
       try {
-        axios.get("api/v1/leaderboard/global").then((response) => {
-          this.users = response.data;
-        });
+        const response = await axios.get("/api/v1/leaderboard/global");
+        this.users = response.data; // Populate users array
+        console.log("Global leaderboard data fetched:", this.users);
       } catch (error) {
-        console.error("Error loading global user rankings:", error);
+        console.error("Error fetching global leaderboard:", error);
       }
     },
     async getPLeaderboard() {
-        try {
-        axios.get("api/v1/leaderboard/fleaderboard").then((response) => {
-          this.fUsers = response.data;
+      try {
+        const response = await axios.get("/api/v1/leaderboard/fleaderboard", {
+          params: { username: localStorage.getItem('active_username') },
         });
+        this.fUsers = response.data; // Populate fUsers array
+        console.log("Follower leaderboard data fetched:", this.fUsers);
       } catch (error) {
-        console.error("Error loading global user rankings:", error);
+        console.error("Error fetching follower leaderboard:", error);
+      }
+    },
+    async searchUsers() {
+      try {
+        const response = await axios.get("/api/v1/leaderboard/search/", {
+          params: { q: this.search.trim() },
+        });
+        this.filteredResults = response.data.users; // Update users array with search results
+        console.log("Search results:", this.users);
+        this.followMessage = "Search for a user to follow!";
+      } catch (error) {
+        console.error("Error searching users:", error);
+      }
+    },
+    async followUser() {
+      try {
+        const username = localStorage.getItem("active_username"); // Active user
+        const response = await axios.post("/api/v1/leaderboard/follow/", {
+          follower_username: username,
+          username_to_follow: this.search.trim(),
+        });
+        console.log("User followed successfully:", response.data);
+        await this.getPLeaderboard(); 
+        this.followMessage = 'Followed!';
+      } catch (error) {
+        console.error("Error following user:", error.response?.data || error.message);
+        this.followMessage = 'Error!';
+      }
+    },
+    async unfollowUser() {
+      try {
+        const username = localStorage.getItem("active_username"); // Active user
+        const response = await axios.post("/api/v1/leaderboard/unfollow/", {
+          follower_username: username,
+          username_to_unfollow: this.search.trim(),
+        });
+        console.log("User unfollowed successfully:", response.data);
+        await this.getPLeaderboard(); 
+        this.followMessage = 'Unfollowed!';
+      } catch (error) {
+        console.error("Error unfollowing user:", error.response?.data || error.message);
+        this.followMessage = 'Error!';
       }
     },
   },
 };
+
 </script>
 
 <style scoped>
@@ -209,6 +232,14 @@ methods: {
   font-size: 16px;
   transition: all 0.2s ease;
 }
+.followresults{
+  display: flex;
+  justify-content: center;
+  margin-top: -1rem;
+  margin-bottom: 3rem;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
 .followButton {
   background-color: #a4e057;
   color: #333;
@@ -244,17 +275,26 @@ methods: {
   box-shadow: 0 0 0 3px rgba(164, 224, 87, 0.2);
 }
 
-.table th,
+.table th{
+  color: #000000;
+  font-size: 20px;
+  font-weight: 525;
+  margin-top: 0;
+  margin-bottom: 30px;
+  transition: all 0.2s ease;
+}
 .table td {
   color: #000000;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 400;
   margin-top: 0;
   margin-bottom: 20px;
+  transition: all 0.2s ease;
 }
 
 th:not(:last-child),
 td:not(:last-child) {
   border-right: 2px solid rgb(0, 0, 0);
+  transition: all 0.2s ease;
 }
 </style>
