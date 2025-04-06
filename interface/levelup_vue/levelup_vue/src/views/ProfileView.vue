@@ -336,8 +336,8 @@ export default {
       const massUnit = this.getMassUnit();
 
       const oldHeight = document.getElementById("heightinput").value;
-      const newHeight = (oldHeight * LENGTH_UNITS.get(prevLengthUnit)
-        / LENGTH_UNITS.get(lengthUnit)).toPrecision(4);
+      const newHeight = (oldHeight * LENGTH_UNITS.get(prevLengthUnit === "ftin" ? "in" : prevLengthUnit)
+        / LENGTH_UNITS.get(lengthUnit === "ftin" ? "in" : lengthUnit)).toPrecision(4);
       document.getElementById("heightinput").value = newHeight;
       document.getElementById("heightunit").innerText = " " + lengthUnit;
       const oldMass = document.getElementById("massinput").value;
@@ -393,7 +393,7 @@ export default {
       const lengthUnit = document.getElementById("lengthselect").value;
       prevLengthUnit = lengthUnit;
       this.loadHealthData("height", "heightinput",
-                          LENGTH_UNITS.get(lengthUnit));
+                          LENGTH_UNITS.get(lengthUnit === "ftin" ? "in" : lengthUnit));
       const massUnit = document.getElementById("massselect").value;
       prevMassUnit = massUnit;
       this.loadHealthData("mass", "massinput",
@@ -452,7 +452,7 @@ export default {
       this.savePrivacy(document.getElementById("privacyselect").value);
       const lengthUnit = document.getElementById("lengthselect").value;
       this.saveHealthData("height", "heightinput", true,
-                          LENGTH_UNITS.get(lengthUnit));
+                          LENGTH_UNITS.get(lengthUnit === "ftin" ? "in" : lengthUnit));
       const massUnit = document.getElementById("massselect").value;
       this.saveHealthData("mass", "massinput", true,
                           MASS_UNITS.get(massUnit));
