@@ -10,23 +10,37 @@ This project was created by the following people:
 - Bilal Jameel (216567380) <bilaljameel665@gmail.com>/<bilal665@my.yorku.ca>  
 - Tan Khoa Tran (218060541) <rickt02@my.yorku.ca>
 
-## Dependencies
+## Backend
 
+### Dependencies
+
+- [Python 3](https://www.python.org/)
 - [PostgreSQL](https://www.postgresql.org/)
-- [NodeJS](https://nodejs.org/)
 
-## Setup Instructions
+### Installation Instructions
 
-These instructions assume you have already installed and setup the dependencies.  If not, do that.
+1. Setup the dependencies above if you haven't already.
+2. Clone the repository if you haven't already.  The directory where your LevelUp repository is stored shall henceforth be referred to as "[LEVELUP]".
+3. The backend requires you to set your database information in environment variables.  Set `LEVELUP_DBUSER` and `LEVELUP_DBPASS` to the username and password of the postgresql account you want to use.
+4. Run the following commands to setup Django and the database, from [LEVELUP]:
 
-### Database
+Windows:
+```powershell
+cd .\interface\levelup_django\levelup_django
+python -m venv .venv
+.venv\Scripts\activate
+pip install django django-rest-framework djoser pillow django-cors-headers psycopg2-binary
+python manage.py migrate
+```
 
-To setup the database, simply:
-1. Open `pgAdmin`.
-2. Open the query tool (second icon on the left sidebar).
-3. Select a server to use, then press "Connect & Open Query Tool".
-4. In the new window that appears, open the file [schema.sql](./schema.sql).
-5. Execute the script.
+Unix:
+```sh
+cd interface/levelup_django/levelup_django
+python -m venv .venv
+.venv/bin/activate
+pip install django django-rest-framework djoser pillow django-cors-headers psycopg2-binary
+python manage.py migrate
+```
 
 To populate the database, do the following:
 1. Have the database already set up (See Above).
@@ -38,16 +52,37 @@ To populate the database, do the following:
 7. Run the third query given in the [setup queries.sql](./setup_queries.sql) file to drop the temp_nutrientamount table, as it is no longer needed.
 8. Ensure everything is done correctly by running the select queries given in the setup queries.sql file to list all the tuples.
 
-### Frontend
+### Execution
+
+1. Go to the same directory you installed LevelUp in (`[LEVELUP]`).
+2. Run the following commands:
+
+Windows:
+```powershell
+cd .\interface\levelup_django\levelup_django
+.venv\Scripts\activate
+python manage.py runserver
+```
+
+Unix:
+```powershell
+cd ./interface/levelup_django/levelup_django
+.venv/bin/activate
+python manage.py runserver
+```
+
+## Frontend
+
+### Dependencies
+
+- [NodeJS](https://nodejs.org/)
+
+### Setup & Execution Instructions
 
 1. Go to `interface/levelup_vue/levelup_vue`.
 2. Run `npm install`.
 
-To run the web server, run `npm run serve`.  To access the website, go to the URL it provides.
-
-### Backend
-
-The backend requires you to set your database information in environment variables.  Set `LEVELUP_DBUSER` and `LEVELUP_DBPASS` to the username and password of the postgresql account you want to use.
+To run the frontend, run `npm run serve` from the same directory.  Your website should be at http://localhost:8080/.
 
 ## Documentation Instructions
 
