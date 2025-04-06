@@ -191,7 +191,7 @@ export default {
 
 .leaderboard-wrapper {
   overflow-y: auto;
-  max-height: 200px;
+  height: auto;
   overflow: hidden;
   position: relative;
   display: flex;
