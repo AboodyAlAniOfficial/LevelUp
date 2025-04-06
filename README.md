@@ -12,6 +12,8 @@ This project was created by the following people:
 
 ## Backend
 
+The backend is a Django server than use PostgreSQL as its database.
+
 ### Dependencies
 
 - [Python 3](https://www.python.org/)
@@ -72,6 +74,8 @@ python manage.py runserver
 ```
 
 ## Frontend
+
+The frontend is based on Vue.js, which depends on NodeJS.
 
 ### Dependencies
 
