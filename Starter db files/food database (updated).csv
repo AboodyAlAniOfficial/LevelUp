@@ -1,0 +1,336 @@
+Food_id,Food,Measure,Grams,Calories,Protein,Fat,Carbs
+1,Cows' milk,1 qt.,976,660,32,40,48
+2,Milk skim,1 qt.,984,360,36,,52
+3,Buttermilk,1 cup,246,127,9,5,13
+4,"Evaporated, undiluted",1 cup,252,345,16,20,24
+5,Fortified milk,6 cups,800,750,89,42,119
+6,Powdered milk,1 cup,103,515,27,28,39
+7,"skim, instant",1 1/3 cups,85,290,30,,42
+8,"skim, non-instant",2/3 cup,85,290,30,,42
+9,Goats' milk,1 cup,244,165,8,10,11
+10,(1/2 cup ice cream),2 cups,540,690,24,24,70
+11,Cocoa,1 cup,252,235,8,11,26
+12,skim. milk,1 cup,250,128,18,4,13
+13,(cornstarch),1 cup,248,275,9,10,40
+14,Custard,1 cup,248,285,13,14,28
+15,Ice cream,1 cup,188,300,6,18,29
+16,Ice milk,1 cup,190,275,9,10,32
+17,Cream or half-and-half,1/2 cup,120,170,4,15,5
+18,or whipping,1/2 cup,119,430,2,44,3
+19,Cheese,1 cup,225,240,30,11,6
+20,uncreamed,1 cup,225,195,38,,6
+21,Cheddar,1-in. cube,17,70,4,6,
+22,"Cheddar, grated cup",1/2 cup,56,226,14,19,1
+23,Cream cheese,1 oz.,28,105,2,11,1
+24,Processed cheese,1 oz.,28,105,7,9,
+25,Roquefort type,1 oz.,28,105,6,9,
+26,Swiss,1 oz.,28,105,7,8,
+27,Eggs raw,2,100,150,12,12,
+28,Eggs Scrambled or fried,2,128,220,13,16,1
+29,Yolks,2,34,120,6,10,
+30,Butter,1T.,14,100,,11,
+31,Butter,1/2 cup,112,113,114,115,118
+32,Butter,1/4 lb.,112,113,114,115,118
+33,Hydrogenated cooking fat,1/2 cup,100,665,0,100,0
+34,Lard,1/2 cup,110,992,0,110,0
+35,Margarine,1/2 cup,112,806,,91,
+36,"Margarine, 2 pat or",1 T.,14,100,,11,
+37,Mayonnaise,1 T.,15,110,,12,
+38,Corn oil,1 T.,14,125,0,14,0
+39,Olive oil,1T.,14,125,0,14,0
+40,Safflower seed oil,1 T.,14,125,0,14,0
+41,French dressing,1 T.,15,60,,6,2
+42,Thousand Island sauce,1 T.,15,75,,8,1
+43,Salt pork,2 oz.,60,470,3,55,0
+44,Bacon,2 slices,16,95,4,8,1
+45,Beef,3 oz.,85,245,23,16,0
+46,Hamburger,3 oz.,85,245,21,17,0
+47,Ground lean,3 oz.,85,185,24,10,0
+48,Roast beef,3 oz.,85,390,16,36,0
+49,Steak,3 oz.,85,330,20,27,0
+50,"Steak, lean, as round",3 oz.,85,220,24,12,0
+51,Corned beef,3 oz.,85,185,22,10,0
+52,Corned beef hash canned,3 oz.,85,120,12,8,6
+53,Corned beef hash Dried,2 oz.,56,115,19,4,0
+54,Pot-pie,1 pie,227,480,18,28,32
+55,Corned beef hash Stew,1 cup,235,185,15,10,15
+56,chicken,3 oz.,85,185,23,9,0
+57,"Fried, breast or leg and thigh chicken",3 oz.,85,245,25,15,0
+58,Roasted chicken,3 1/2 oz.,100,290,25,20,0
+59,"Chicken livers, fried",3 med.,100,140,22,14,2
+60,"Duck, domestic",3 1/2 oz.,100,370,16,28,0
+61,"Lamb, chop, broiled",4 oz.,115,480,24,35,0
+62,Leg roasted,3 oz.,86,314,20,14,0
+63,"Shoulder, braised",3 oz.,85,285,18,23,0
+64,"Pork, chop, 1 thick",3 1/2 oz.,100,260,16,21,0
+65,Ham pan-broiled,3 oz.,85,290,16,22,0
+66,"Ham, as ",2 oz.,57,170,13,13,0
+67,"Ham, canned, spiced",2 oz.,57,165,8,14,1
+68,Pork roast,3 oz.,85,310,21,24,0
+69,Pork sausage,3 1/2 oz.,100,475,18,44,0
+70,Turkey,3 1/2 oz.,100,265,27,15,0
+71,Veal,3 oz.,85,185,23,9,0
+72,Roast,3 oz.,85,305,13,14,0
+73,Clams,3 oz.,85,87,12,1,2
+74,Cod,3 1/2 oz.,100,170,28,5,0
+75,Crab meat,3 oz.,85,90,14,2,1
+76,Fish sticks fried,5,112,200,19,10,8
+77,Flounder,3 1/2 oz.,100,200,30,8,0
+78,Haddock,3 oz.,85,135,16,5,6
+79,Halibut,3 1/2 oz.,100,182,26,8,0
+80,Herring,1 small,100,211,22,13,0
+81,Lobster,aver.,100,92,18,1,
+82,Mackerel,3 oz.,85,155,18,9,0
+83,Oysters,6-8 med.,230,231,232,233,236
+84,Oyster stew,1 cup,85,125,19,6,0
+85,Salmon,3 oz.,85,120,17,5,0
+86,Sardines,3 oz.,85,180,22,9,0
+87,Scallops,3 1/2 oz.,100,104,18,8,10
+88,Shad,3 oz.,85,170,20,10,0
+89,Shrimp,3 oz.,85,110,23,1,0
+90,Swordfish,1 steak,100,180,27,6,0
+91,Tuna,3 oz.,85,170,25,7,0
+92,Artichoke,1 large,100,44,2,,10
+93,Asparagus,6 spears,96,18,1,,3
+94,Beans,1 cup,125,25,1,,6
+95,Lima,1 cup,160,140,8,,24
+96,"Lima, dry, cooked",1 cup,192,260,16,,48
+97,"Navy, baked with pork",3/4 cup,200,250,11,6,37
+98,Red kidney,1 cup,260,230,15,1,42
+99,Bean sprouts,1 cup,50,17,1,,3
+100,Beet greens,1 cup,100,27,2,,6
+101,Beetroots,1 cup,165,1,12,0,1
+102,Broccoli,1 cup,150,45,5,,8
+103,Brussels sprouts,1 cup,130,60,6,,12
+104,Sauerkraut,1 cup,150,32,1,,7
+105,Steamed cabbage,1 cup,170,40,2,,9
+106,Carrots,1 cup,150,45,1,,10
+107,"Raw, grated",1 cup,110,45,1,,10
+108,"Strips, from raw",1 mad.,50,20,,,5
+109,Cauliflower,1 cup,120,30,3,,6
+110,Celery,1 cup,100,20,1,,4
+111,Stalk raw,1 large,40,5,1,,1
+112,Chard steamed,1 cup,150,30,2,,7
+113,Collards,1 cup,150,51,5,,8
+114,Corn,1 ear,100,92,3,1,21
+115,cooked or canned,1 cup,200,170,5,,41
+116,Cucumbers,8,50,6,,0,1
+117,Dandelion greens,1 cup,180,80,5,1,16
+118,Eggplant,1 cup,180,30,2,,9
+119,Endive,2 oz.,57,10,1,,2
+120,Kale,1 cup,110,45,4,1,8
+121,Kohlrabi,1 cup,140,40,2,,9
+122,"Lambs quarters, steamed",1 cup,150,48,5,,7
+123,Lentils,1 cup,200,212,15,,38
+124,Lettuce,1/4 head,100,14,1,,2
+125,Iceberg,1/4 head,100,13,,,3
+126,Mushrooms canned,4,120,12,2,,4
+127,Mustard greens,1,140,30,3,,6
+128,Okra,1 1/3 cups,100,32,1,,7
+129,Onions,1,210,80,2,,18
+130,"Raw, green",6 small,50,22,,,5
+131,Parsley,2 T.,50,2,,,
+132,Parsnips,1 cup,155,95,2,1,22
+133,Peas,1 cup,100,66,3,,13
+134,"Fresh, steamed peas",1 cup,100,70,5,,12
+135,Frozen peas,1 cup,100,,5,,12
+136,Split cooked peas,4 cups,100,115,8,,21
+137,heated peas,1 cup,100,53,3,,10
+138,Peppers canned,1 pod,38,10,,,2
+139,"Peppers Raw, green, sweet",1 large,100,25,1,,6
+140,Peppers with beef and crumbs,1 med.,150,255,19,9,24
+141,"Potatoes, baked",1 med.,100,100,2,,22
+142,French-fried,10 pieces,60,155,0,7,20
+143,Potatoes Mashed with milk and butter,1 cup,200,230,4,12,28
+144,"Potatoes, pan-tried",3/4 cup,100,268,4,14,33
+145,Scalloped with cheese potatoes,3/4 cup,100,145,6,8,14
+146,Steamed potatoes before peeling,1 med.,100,80,2,,19
+147,Potato chips,10,20,110,1,7,10
+148,Radishes,5 small,50,10,,0,2
+149,Rutabagas,4 cups,100,32,,0,8
+150,Soybeans,1 cup,200,260,22,11,20
+151,Spinach,1 cup,100,26,3,,3
+152,Squash,1 cup,210,35,1,,8
+153,"Winter, mashed",1 cup,200,95,4,,23
+154,Sweet potatoes,1 med.,110,155,2,1,36
+155,Candied,1 med.,175,235,2,6,80
+156,Tomatoes,1 cup,240,50,2,,9
+157,"Raw, 2 by 2 1/2",1 med.,150,30,1,,6
+158,Tomato juice,1 cup,240,50,2,,10
+159,Tomato catsup,1 T.,17,15,,,4
+160,Turnip greens,1 cup,145,45,4,1,8
+161,"Turnips, steamed",1 cup,155,40,1,,9
+162,"Watercress stems, raw",1 cup,50,9,1,,1
+163,Apple juice canned,1 cup,250,125,,0,34
+164,Apple vinegar,1/3 cup,100,14,,0,3
+165,"Apples, raw",1 med,130,70,,,18
+166,Stewed or canned,1 cup,240,100,,,26
+167,Apricots,1 cup,250,220,2,,57
+168,"Dried, uncooked",1/2 cup,75,220,4,,50
+169,Fresh,3 med.,114,55,1,,14
+170,"Nectar, or juice",1 cup,250,140,1,,36
+171,Avocado,1/2 large,108,185,2,18,6
+172,Banana,1 med.,150,85,1,,23
+173,Blackberries,1 cup,144,85,2,1,19
+174,Blueberries,1 cup,250,245,1,,65
+175,Cantaloupe,1/2 med.,380,40,1,,9
+176,Cherries,1 cup,257,100,2,1,26
+177,"Fresh, raw",1 cup,114,65,1,,15
+178,Cranberry sauce sweetened,1 cup,277,530,,,142
+179,Dates,1 cup,178,505,4,,134
+180,Figs,2,42,120,2,,30
+181,"Fresh, raw figs",3 med.,114,90,2,,22
+182,figs Canned with syrup ,3,115,130,1,,32
+183,"Fruit cocktail, canned",1 cup,256,195,1,,50
+184,Grapefruit sections,1 cup,250,170,1,,44
+185,"Grapefruit, fresh, 5"" diameter",02-Jan,285,50,1,,14
+186,Grapefruit juice,1 cup,250,100,1,,24
+187,Grapes,1 cup,153,70,1,,16
+188,"European, as Muscat, Tokay",1 cup,160,100,1,,26
+189,Grape juice,1 cup,250,160,1,,42
+190,Lemon juice,1/2 cup,125,30,,,10
+191,Lemonade concentratefrozen,6-oz. can,220,430,,,112
+192,Limeade concentrate frozen,6-oz. can,218,405,,,108
+193,Olives large,10,65,72,1,10,3
+194,OlivesRipe,10,65,105,1,,1
+195,"Oranges 3"" diameter",1 med.,180,60,2,,16
+196,Orange juice,8 oz. or,250,112,2,,25
+197,Frozen ,6-oz. can,210,330,2,,78
+198,Papaya,1/2 med.,200,75,1,,18
+199,Peaches,1 cup,257,200,1,,52
+200,"Fresh, raw",1 med.,114,35,1,,10
+201,Pears,1 cup,255,195,1,,50
+202,"Raw, 3 by 2V",1 med.,182,100,1,1,25
+203,Persimmons,1 med.,125,75,1,,20
+204,Pineapple,1 large slice,122,95,,,26
+205,Pineapple Crushed,1 cup,260,205,1,,55
+206,"Raw, diced",1 cup,140,75,1,,19
+207,Pineapple juice,1 cup,250,120,1,,32
+208,Plums,1 cup,256,185,1,,50
+209,"Raw, 2"" diameter",1,60,30,,,7
+210,Prunes,1 cup,270,300,3,1,81
+211,Prune juice,1 cup,240,170,1,,45
+212,Raisins,1/2 cup,88,230,2,,82
+213,Raspberries,1/2 cup,100,100,,,25
+214,"Raw, red",3/4 cup,100,57,,,14
+215,Rhubarb sweetened,1 cup,270,385,1,,98
+216,Strawberries,1 cup,227,242,1,,60
+217,Raw,1 cup,149,54,,,12
+218,Tangerines,I med.,114,40,1,,10
+219,Watermelon,1 wedge,925,120,2,1,29
+220,Biscuits,1,38,130,3,4,18
+221,Bran flakes,1 cup,25,117,3,,32
+222,"Bread, cracked wheat",1 slice,23,60,2,1,12
+223,Rye,1 slice,23,55,2,1,12
+224,"White, 20 slices, or",1-lb. loaf,454,990,39,15,229
+225,Whole-wheat,1-lb. loaf,454,900,48,14,216
+226,Whole-wheat,1 slice,23,55,2,1,11
+227,Corn bread ground meal,1 serving,50,100,3,4,15
+228,Cornflakes,1 cup,25,110,2,,25
+229,Corn grits cooked,1 cup,242,120,8,,27
+230,Corn meal,1 cup,118,360,9,4,74
+231,Crackers,2 med.,14,55,1,1,10
+232,"Soda, 2 1/2 square",2,11,45,1,1,8
+233,Farina,1 cup,238,105,3,,22
+234,Flour,1 cup,110,460,39,22,33
+235,Wheat (all purpose),1 cup,110,400,12,1,84
+236,Wheat (whole),1 cup,120,390,13,2,79
+237,Macaroni,1 cup,140,155,5,1,32
+238,Baked with cheese,1 cup,220,475,18,25,44
+239,Muffins,1,48,135,4,5,19
+240,Noodles,1 cup,160,200,7,2,37
+241,Oatmeal,1 cup,236,150,5,3,26
+242,"Pancakes 4"" diam.",4,108,250,7,9,28
+243,"Wheat, pancakes 4"" diam.",4,108,250,7,9,28
+244,"Pizza 14"" diam.",1 section,75,180,8,6,23
+245,Popcorn salted,2 cups,28,152,3,7,20
+246,Puffed rice,1 cup,14,55,,,12
+247,Puffed wheat presweetened,1 cup,28,105,1,,26
+248,Rice,1 cup,208,748,15,3,154
+249,Converted,1 cup,187,677,14,,142
+250,White,1 cup,191,692,14,,150
+251,Rice flakes,1 cup,30,115,2,,26
+252,Rice polish,1/2 cup,50,132,6,6,28
+253,Rolls,1 large,50,411,3,12,23
+254,of refined flour,1,38,115,3,2,20
+255,whole-wheat,1,40,102,4,1,20
+256,Spaghetti with meat sauce,1 cup,250,285,13,10,35
+257,with tomatoes and cheese,1 cup,250,210,6,5,36
+258,Spanish rice,1 cup,250,217,4,4,40
+259,Shredded wheat biscuit,1,28,100,3,1,23
+260,Waffles,1,75,240,8,9,30
+261,Wheat germ,1 cup,68,245,17,7,34
+262,Wheat-germ cereal toasted,1 cup,65,260,20,7,36
+263,Wheat meal cereal unrefined,3/4 cup,30,103,4,1,25
+264,"Wheat, cooked",3/4 cup,200,275,12,1,35
+265,Bean soups,1 cup,250,190,8,5,30
+266,Beef soup,1 cup,250,100,6,4,11
+267,Bouillon,1 cup,240,24,5,0,0
+268,chicken soup,1 cup,250,75,4,2,10
+269,Clam chowder,1 cup,255,85,5,2,12
+270,Cream soups,1 cup,255,200,7,12,18
+271,Noodle,1 cup,250,115,6,4,13
+272,Split-pea soup,1 cup,250,147,8,3,25
+273,Tomato soup,1 cup,245,175,6,7,22
+274,Vegetable,1 cup,250,80,4,2,14
+275,Apple betty,1 serving,100,150,1,4,29
+276,Bread pudding,3/4 cup,200,374,11,12,56
+277,Cakes,1 slice,40,110,3,,23
+278,Chocolate fudge,1 slice,120,420,5,14,70
+279,Cupcake,1,50,160,3,3,31
+280,Fruit cake,1 slice,30,105,2,4,17
+281,Gingerbread,1 slice,55,180,2,7,28
+282,"Plain, with no icing",1 slice,55,180,4,5,31
+283,Sponge cake,1 slice,40,115,3,2,22
+284,Candy,5,25,104,,3,19
+285,Chocolate creams,2,30,130,,4,24
+286,Fudge,2 pieces,90,370,,12,80
+287,Hard candies,1 oz.,28,90,,0,28
+288,Marshmallows,5,30,98,1,0,23
+289,Milk chocolate,2-oz. bar,56,290,2,6,44
+290,Chocolate syrup,2 T.,40,80,,,22
+291,Doughnuts,1,33,135,2,7,17
+292,"Gelatin, made with water",1 cup,239,155,4,,36
+293,Honey,2 T.,42,120,,0,30
+294,Ice cream,2 cups,300,250,0,0,0
+295,Ices,1 cup,150,117,0,0,48
+296,preserves,1 T.,20,55,0,0,14
+297,Jellies,1 T.,20,50,0,0,13
+298,Molasses,1 T.,20,45,0,0,11
+299,Cane Syrup,1 T.,20,50,0,0,13
+300,"9"" diam. pie",1 slice,135,330,3,13,53
+301,Cherry Pie,1 slice,135,340,3,13,55
+302,Custard,1 slice,130,265,7,11,34
+303,Lemon meringue,1 slice,120,300,4,12,45
+304,Mince,1 slice,135,340,3,9,62
+305,Pumpkin Pie,1 slice,130,265,5,12,34
+306,Puddings Sugar,1 cup,200,770,0,0,199
+307,3 teaspoons sugar,1 T.,12,50,0,0,12
+308,"Brown, firm-packed, dark sugar",1 cup,220,815,0,,210
+309,Syrup,2 T.,40,100,0,0,25
+310,table blends sugar,2 T.,40,110,0,0,29
+311,Tapioca cream pudding,1 cup,250,335,10,10,42
+312,Almonds,1/2 cup,70,425,13,38,13
+313,roasted and salted,1/2 cup,70,439,13,40,13
+314,Brazil nuts,1/2 cup,70,457,10,47,7
+315,Cashews,1/2 cup,70,392,12,32,20
+316,coconut sweetened,1/2 cup,50,274,1,20,26
+317,Peanut butter,1/3 cup,50,300,12,25,9
+318,"Peanut butter, natural",1/3 cup,50,284,13,24,8
+319,Peanuts,1/3 cup,50,290,13,25,9
+320,Pecans,1/2 cup,52,343,5,35,7
+321,Sesame seeds,1/2 cup,50,280,9,24,10
+322,Sunflower seeds,1/2 cup,50,280,12,26,10
+323,Walnuts,1/2 cup,50,325,7,32,8
+324,Beer,2 cups,480,228,,0,8
+325,Gin,1 oz.,28,70,0,0,
+326,Wines,1/2 cup,120,164,,0,9
+327,Table (12.2% alcohol),1/2 cup,120,100,,0,5
+328,Carbonated drinks Artificially sweetened,12 oz.,346,0,0,0,0
+329,Club soda,12 oz.,346,0,0,0,0
+330,Cola drinks,12 oz.,346,137,0,0,38
+331,Fruit-flavored soda,12 oz.,346,161,0,0,42
+332,Ginger ale,12 oz.,346,105,0,0,28
+333,Root beer,12 oz.,346,140,0,0,35
+334,Coffee,1 cup,230,3,,0,1
+335,Tea,1 cup,230,4,0,,1
