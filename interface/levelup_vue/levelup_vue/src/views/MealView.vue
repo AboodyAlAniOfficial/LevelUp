@@ -100,7 +100,7 @@
       </div>
     </div>
 
-    <!-- Modal: View Logged Meals (UPDATED) -->
+    <!-- Modal: View Logged Meals -->
     <div v-if="showMealModal" class="modal-overlay">
       <div class="modal-content">
         <h3 class="modal-title">Your Logged Meals</h3>
@@ -164,7 +164,6 @@ export default {
       expandedMeals: [],
       isEditing: false,
       editingMealId: null,
-      // New properties for delete confirmation
       showDeleteConfirmModal: false,
       mealToDelete: {
         id: null,
@@ -181,6 +180,7 @@ export default {
     this.fetchAllMeals();
   },
   methods: {
+    // Function to fetch all meals from the server
     getEmptyFoodItem() {
       return {
         food_name: '',
@@ -193,6 +193,7 @@ export default {
         isExpanded: false,
       };
     },
+    // Function to handle food search
     async searchMeals(index) {
       const query = this.foods[index].search;
       if (query.length < 2) {
@@ -208,6 +209,7 @@ export default {
         console.error('Error searching meals:', error);
       }
     },
+    // Function to debounce the search input
     debouncedSearch: debounce(function (index) {
       this.searchMeals(index);
     }, 300),
@@ -224,6 +226,7 @@ export default {
         isExpanded: true,
       };
     },
+    // Function to enable manual entry of food item
     enableManualEntry(index) {
       this.foods[index].isExpanded = true;
       this.foods[index].searchResults = [];
@@ -246,6 +249,7 @@ export default {
         return;
       }
 
+      // Validate food items
       const payload = {
         username: localStorage.getItem('active_username'),
         meal_name: this.mealName || `Meal on ${new Date().toLocaleString()}`,
@@ -289,6 +293,7 @@ export default {
         setTimeout(() => (this.message = ''), 3000);
       }
     },
+    // Function to fetch all meals from the server
     async fetchAllMeals() {
       try {
         const res = await axios.get('/api/v1/meals/user/', {
@@ -299,6 +304,7 @@ export default {
         console.error('Failed to fetch meals:', err);
       }
     },
+    // Function to toggle meal expansion
     toggleExpand(mealId) {
       if (this.expandedMeals.includes(mealId)) {
         this.expandedMeals = this.expandedMeals.filter(id => id !== mealId);
@@ -306,7 +312,7 @@ export default {
         this.expandedMeals.push(mealId);
       }
     },
-    // New methods for delete confirmation
+    // Function to confirm meal deletion
     confirmDeleteMeal(mealId, mealName) {
       this.mealToDelete = {
         id: mealId,
@@ -314,6 +320,7 @@ export default {
       };
       this.showDeleteConfirmModal = true;
     },
+    // Function to handle meal deletion
     async confirmDelete() {
       try {
         await axios.delete(`/api/v1/meals/${this.mealToDelete.id}/delete/`);
@@ -327,6 +334,7 @@ export default {
         setTimeout(() => (this.message = ''), 3000);
       }
     },
+    // Function to cancel delete action
     cancelDelete() {
       this.showDeleteConfirmModal = false;
       this.mealToDelete = {
@@ -334,6 +342,7 @@ export default {
         name: ''
       };
     },
+    //  Function to edit a meal
     editMeal(meal) {
       this.isEditing = true;
       this.editingMealId = meal.id;
@@ -348,7 +357,7 @@ export default {
     },
   },
 };
-
+// Function to debounce search input
 function debounce(func, wait = 300) {
   let timeout;
   return function (...args) {
@@ -604,7 +613,6 @@ function debounce(func, wait = 300) {
   animation: fadeIn 0.3s ease;
 }
 
-/* UPDATED MODAL STYLES */
 /* Modal Overlay */
 .modal-overlay {
   position: fixed;

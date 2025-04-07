@@ -8,6 +8,8 @@ from rest_framework import status
 def index(request):
     return Response("This is the meals index.")
 
+# This function searches for food items in the PredefinedDatabase based on a query parameter
+# It returns a list of food items that match the query
 @api_view(['GET'])
 def search_foods(request):
     query = request.query_params.get('q', '')
@@ -27,6 +29,8 @@ def search_foods(request):
     ]
     return Response(data)
 
+# This function logs a meal with multiple food items
+
 @api_view(['POST'])
 def log_meal(request):
     username = request.data.get('username')
@@ -37,7 +41,7 @@ def log_meal(request):
         user = User.objects.get(username=username)
     except User.DoesNotExist:
         return Response({'success': False, 'message': 'User not found.'}, status=404)
-
+    # Check if the user is authenticated
     food_items_data = request.data.get('foods', [])
     if not food_items_data:
         return Response({'success': False, 'message': 'No food items provided.'}, status=400)
@@ -47,7 +51,7 @@ def log_meal(request):
         total_protein = sum(float(item.get('protein', 0)) for item in food_items_data)
         total_carbs = sum(float(item.get('carbs', 0)) for item in food_items_data)
         total_fats = sum(float(item.get('fats', 0)) for item in food_items_data)
-
+        # Create a new meal entry in the database
         meal = LoggedMeal.objects.create(
             user=user,
             meal_name=request.data.get('meal_name', 'Untitled Meal'),
@@ -57,7 +61,7 @@ def log_meal(request):
             fats=total_fats,
             description=request.data.get('description', '')
         )
-
+        # Create food items associated with the meal
         for food in food_items_data:
             FoodItem.objects.create(
                 meal=meal,
@@ -73,8 +77,10 @@ def log_meal(request):
     except Exception as e:
         return Response({'success': False, 'message': str(e)}, status=500)
 
+# This function retrieves all meals logged by a user
 @api_view(['GET'])
 def get_user_meals(request):
+    # Get the username from the query parameters
     username = request.query_params.get('username')
     if not username:
         return Response({'success': False, 'message': 'Username is required.'}, status=400)
@@ -94,6 +100,8 @@ def get_user_meals(request):
                 }
                 for f in meal.foods.all()
             ]
+            # Append the meal data to the list
+            # Include the food items in the response
             data.append({
                 "id": meal.id,
                 "meal_name": meal.meal_name,
@@ -106,18 +114,24 @@ def get_user_meals(request):
     except User.DoesNotExist:
         return Response({'success': False, 'message': 'User not found.'}, status=404)
 
+# This function deletes a meal by its ID
 @api_view(['DELETE'])
 def delete_meal(request, meal_id):
     try:
+        # It takes a meal ID as a URL parameter
         meal = LoggedMeal.objects.get(id=meal_id)
+        # and deletes the meal with that ID from the database
         meal.delete()
         return Response({"success": True, "message": "Meal deleted successfully."})
     except LoggedMeal.DoesNotExist:
         return Response({"success": False, "message": "Meal not found."}, status=404)
 
+#  This function updates a meal and its associated food items  
+# It takes a meal ID as a URL parameter and expects the updated meal data in the request body
 @api_view(['PUT'])
 def update_meal(request, meal_id):
     try:
+        # Get the meal by ID
         meal = LoggedMeal.objects.get(id=meal_id)
     except LoggedMeal.DoesNotExist:
         return Response({"success": False, "message": "Meal not found."}, status=404)
@@ -127,6 +141,7 @@ def update_meal(request, meal_id):
         return Response({'success': False, 'message': 'No food items provided.'}, status=400)
 
     try:
+        # Update the meal details
         meal.meal_name = request.data.get('meal_name', meal.meal_name)
         meal.description = request.data.get('description', meal.description)
         meal.calories = sum(float(item.get('calories', 0)) for item in food_items_data)
@@ -135,6 +150,8 @@ def update_meal(request, meal_id):
         meal.fats = sum(float(item.get('fats', 0)) for item in food_items_data)
         meal.save()
 
+        # Update the food items associated with the meal
+        # First, delete the existing food items
         meal.foods.all().delete()
         for food in food_items_data:
             FoodItem.objects.create(

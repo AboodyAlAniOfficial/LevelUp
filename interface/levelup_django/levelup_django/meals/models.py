@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+# Stores static nutritional information for predefined food items
 class PredefinedDatabase(models.Model):
     Food_id = models.IntegerField(primary_key=True)
     Food = models.CharField(max_length=255)
@@ -17,6 +18,7 @@ class PredefinedDatabase(models.Model):
     def __str__(self):
         return self.Food
 
+# This model is used to populate the database with food data
 class LoggedMeal(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     meal_name = models.CharField(max_length=255)
@@ -33,6 +35,7 @@ class LoggedMeal(models.Model):
     def __str__(self):
         return f"{self.meal_name} (User: {self.user.username})"
 
+# This model is used to store food items associated with a logged meal
 class FoodItem(models.Model):
     meal = models.ForeignKey(LoggedMeal, related_name='foods', on_delete=models.CASCADE)
     food_name = models.CharField(max_length=255)
